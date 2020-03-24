@@ -1,5 +1,6 @@
+
 PVector center;
-int numPoints=15;
+int numPoints=50;
 float [] pointsRadius = new float[numPoints];
 float angle=TWO_PI/(float)numPoints;
 int life = 100;
@@ -23,18 +24,22 @@ void draw(){
   
   background(255);
   noFill();
+  //fill(10,0,0);
+  
   strokeWeight(6);
      
   beginShape();
+  
   for(int i=0;i<numPoints;i++)
   {
-    
     pointsRadius[i] += growth;
     stroke(0, 0, 0, life);
     curveVertex(center.x + pointsRadius[i]*sin(angle*i), center.y + pointsRadius[i]*cos(angle*i));
-  
   }
-  endShape();
+  
+  curveVertex(center.x + pointsRadius[0]*sin(angle), center.y + pointsRadius[0]*cos(angle));
+  // More info here how to make the shape closed properly
+  endShape(CLOSE);
   
   life--;
   
