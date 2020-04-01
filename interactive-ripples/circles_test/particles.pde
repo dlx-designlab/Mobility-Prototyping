@@ -9,8 +9,11 @@ class ParticleSystem {
     particles = new ArrayList();
   }
  
-  void addParticle() {
-    particles.add(new Particle(origin));
+  void addParticle(int ctlPts, int maxRad, int minRad, float growRate, 
+                    int lifeSpan, float fadeSpeed, int rippleWidth, 
+                    boolean shapeFill, boolean shapeStrtoke, color strokeColor, color fillColor) {
+    particles.add(new Particle(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed, 
+                                rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor));
   }
 
   // Update all the particles in the system
@@ -49,35 +52,37 @@ class Particle {
   color strokeCol;
  
   // Coinstructor
-  Particle(PVector l) {
+  Particle(PVector l, int ctlPts, int maxR, int minR, float growRate, 
+                    int lifeSpan, float fadeSpd, int rippleW, 
+                    boolean shpFill, boolean shpStrtoke, color strkColor, color fillColor) {
     
     // How many points define the ripple shape
-    numOfPoints = 20;    
+    numOfPoints = ctlPts;    
     
     // How wiggly the shape will be
-    minRad = 10;
-    maxRad = 20;
+    maxRad = maxR;
+    minRad = minR;
     
     //how fast will the ripple grow/expand 
-    growth = 3.0;
+    growth = growRate;
     
     // Lifespan Max value is 255
     // If the particle to be fully opaque when it first appears
-    lifespan = 255.0; 
+    lifespan = lifeSpan; 
     
     // how fast the particles fade
-    fadeSpeed = 5.0;
+    fadeSpeed = fadeSpd;
     
     // The width of the ripple shape stroke (if used)
-    rippleWidth = 5;    
+    rippleWidth = rippleW;    
     
     // The color of the fill / stroke (feel free to add more colors)
-    strokeCol = color(0, 255, 255);
-    fillCol = color(255, 0, 255);
+    strokeCol = strkColor;
+    fillCol = fillColor;
 
     //  Fill and stroke visibility
-    shapeFill = true;
-    shapeStrtoke = true;
+    shapeFill = shpFill;
+    shapeStrtoke = shpStrtoke;
 
     // Calculate the center of the ripple
     // And the angle between the shape points
