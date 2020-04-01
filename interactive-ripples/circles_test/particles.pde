@@ -43,19 +43,49 @@ class Particle {
   int numOfPoints;
   int minRad;
   int maxRad;
+  boolean shapeFill;
+  boolean shapeStrtoke;
+  color fillCol;
+  color strokeCol;
  
   // Coinstructor
   Particle(PVector l) {
+    
+    // How many points define the ripple shape
     numOfPoints = 20;    
-    minRad = 5;
+    
+    // How wiggly the shape will be
+    minRad = 10;
     maxRad = 20;
-    growth = 3;
-    location = l.copy();
-    angle = TWO_PI/(float)numOfPoints;
-    lifespan = 100.0;
-    fadeSpeed = 1;
+    
+    //how fast will the ripple grow/expand 
+    growth = 3.0;
+    
+    // Lifespan Max value is 255
+    // If the particle to be fully opaque when it first appears
+    lifespan = 255.0; 
+    
+    // how fast the particles fade
+    fadeSpeed = 5.0;
+    
+    // The width of the ripple shape stroke (if used)
     rippleWidth = 5;    
     
+    // The color of the fill / stroke (feel free to add more colors)
+    strokeCol = color(0, 255, 255);
+    fillCol = color(255, 0, 255);
+
+    //  Fill and stroke visibility
+    shapeFill = true;
+    shapeStrtoke = true;
+
+    // Calculate the center of the ripple
+    // And the angle between the shape points
+    location = l.copy();
+    angle = TWO_PI/(float)numOfPoints;
+
+    // Fill the array of points which defines the ripple shape
+    // Each array element is a random point-raduis, within the range: minRad <> maxRad
     pointsRadius = new float[numOfPoints];
     for(int i=0;i<numOfPoints;i++){
       pointsRadius[i] = random(minRad, maxRad);
@@ -84,12 +114,17 @@ class Particle {
   void display() {
 
     // Particle style
-    noFill();
-    fill(255, 255, 255, lifespan);
-    noStroke();
-    // stroke(255, 255, 255, lifespan);  
-    // strokeWeight(rippleWidth); 
-      
+    if(shapeFill)
+      fill(fillCol, lifespan);
+    else
+      noFill();
+
+    if(shapeStrtoke){
+      stroke(strokeCol, lifespan);
+      strokeWeight(rippleWidth);       
+    } else
+      noStroke();  
+
     // Draw a ripple shape
     beginShape();
     curveVertex(location.x + pointsRadius[numOfPoints-1]*sin(angle*(numOfPoints-1)), location.y + pointsRadius[numOfPoints-1]*cos(angle*(numOfPoints-1)));
@@ -99,7 +134,7 @@ class Particle {
     }
     curveVertex(location.x + pointsRadius[0]*sin(0), location.y + pointsRadius[0]*cos(0)); 
     curveVertex(location.x + pointsRadius[1]*sin(angle), location.y + pointsRadius[1]*cos(angle)); 
-    endShape();    
+    endShape();
   
   }
 
