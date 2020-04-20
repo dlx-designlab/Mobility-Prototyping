@@ -11,6 +11,8 @@
   - Green: SCL - GPIO5
   - Black: GND - GPIO9
 
+![](./sensor-wiring.png)
+
 <h1>Key Scripts Details: </h1>
  
 - /heat_tracking_ripples/ heat_tracking_ripples.pde - MAIN particles genarator app
