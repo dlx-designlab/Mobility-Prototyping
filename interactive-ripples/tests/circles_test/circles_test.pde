@@ -1,5 +1,10 @@
 import controlP5.*;
 import java.util.Iterator;
+import oscP5.*;
+import netP5.*;
+
+OscP5 oscP5;
+NetAddress myBroadcastLocation; 
 
 ControlP5 cp5;
 ParticleSystem ps;
@@ -7,33 +12,33 @@ PVector ps_origin;
 
 // ###  Deafault Sliders Values ####
 // How many points define the ripple shape
-int control_points = 10;
+int control_points = 31;
 
 // How wiggly the shape will be
-int max_radius = 20;
-int min_radius = 10;
+int max_radius = 13;
+int min_radius = 9;
 
 //how fast will the ripple grow/expand 
-float growth = 3.0;
+float growth = 1.8;
 
 // Lifespan Max value is 255 if the particle to be fully opaque when it first appears
 int life_span = 255; 
 
 // how fast the particles fade
-float fade_speed = 5.0;
+float fade_speed = 10;
 
 // The width of the ripple shape stroke (if used)
-int ripple_width = 5;    
+int ripple_width = 7;    
 
 //  Fill and stroke visibility
-boolean shape_fill = true;
+boolean shape_fill = false;
 boolean shape_strtoke = true;
 
-color stroke_color = color(255, 0, 255);
-color fill_color = color(255, 255, 0);
+color stroke_color = color(255, 255, 255);
+color fill_color = color(200, 200, 200);
 
 // how often to create a new particle (Higher value is slower)
-int freq = 10;
+int freq = 4;
 
 // ###  End of Deafault Sliders Values ####
 
@@ -41,8 +46,13 @@ int freq = 10;
 // SCENE SETUP
 void setup() {
   // Set Canvas Size
-  size(1200, 600);
+  size(800, 800);
   frameRate(30);
+
+
+  // OSC Server Setup
+  oscP5 = new OscP5(this,5005);
+  myBroadcastLocation = new NetAddress("127.0.1.1",5006);
   
   // control panel
   cp5 = new ControlP5(this);
@@ -59,8 +69,8 @@ void draw() {
   background(0);  
 
   // update particle system position
-  ps_origin.x = mouseX;
-  ps_origin.y = mouseY;
+  //ps_origin.x = mouseX;
+  //ps_origin.y = mouseY;
   ps.origin = ps_origin.copy();
 
   // calculate and update all particle system elemets
@@ -78,6 +88,16 @@ void draw() {
   // Add a blur effect (might be slow on hight resolution canvas)
   //filter(BLUR, 2);
   
+}
+
+
+/* incoming osc message are forwarded to the oscEvent method. */
+void oscEvent(OscMessage theOscMessage) {
+  /* get and print the address pattern and the typetag of the received OscMessage */
+  //println("### received an osc message with addrpattern "+theOscMessage.addrPattern()+" and typetag "+theOscMessage.typetag());
+  //theOscMessage.print();
+  ps_origin = new PVector(theOscMessage.get(1).intValue()*100, theOscMessage.get(0).intValue()*100);
+  println(ps_origin);
 }
 
 
