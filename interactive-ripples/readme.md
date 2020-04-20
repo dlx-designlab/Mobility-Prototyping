@@ -11,7 +11,7 @@
   - Green: SCL - GPIO5
   - Black: GND - GPIO9
 
-<h1>Key Scripts Setails: </h1>
+<h1>Key Scripts Details: </h1>
  
 - /heat_tracking_ripples/ heat_tracking_ripples.pde - MAIN particles genarator app
 - sensor_pos_sender.py - gets grid eye data & send via osc
