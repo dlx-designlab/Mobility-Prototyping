@@ -1,8 +1,6 @@
 <h1>Hardware Setup:</h1>
 
 - PC: Raspberry Pi4, RAM: 4GB, OS: Raspbian Buster with desktop (Version:February 2020, Release date:2020-02-13, Kernel version:4.19)
-  -user: pi
-  - password: raspberry
 - Display: [アイリスオーヤマ 55型 4K対応 液晶 テレビ 55インチ ブラック 55UB10P](https://www.amazon.co.jp/dp/B07RSXQML1/)
 - Senosr: [SparkFun Grid-EYE Infrared Array Breakout - AMG8833 (Qwiic)](https://www.sparkfun.com/products/14607)
 - Sensor Connection to Pi:
