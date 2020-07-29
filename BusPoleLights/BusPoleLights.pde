@@ -1,3 +1,8 @@
+// This sketch is using fadecandy
+// https://www.adafruit.com/product/1689
+// You need to download and run the fedecandy server
+// before running this sketch
+
 import processing.video.*;
 
 OPC opc;
