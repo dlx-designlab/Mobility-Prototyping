@@ -47,15 +47,23 @@ color fill_color = color(200, 200, 200);
 // how often to create a new particle (Higher value is slower)
 int freq = 4;
 
+int scale_size = 100;
+
+// TODO: change scale
+// coordinate of the display heat
+int heat_from_display_origin_x = 500;
+int heat_from_display_origin_y = 100;
+
 // ###  End of Deafault Sliders Values ####
 
 
 // SCENE SETUP
 void setup() {
   // Set Canvas Size
-  size(800, 800);
+  size(800, 400);
+  // frameRate(30);
+  // size(2400, 2400);
   frameRate(30);
-
 
   // OSC Server Setup
   oscP5 = new OscP5(this,5005);
@@ -66,14 +74,14 @@ void setup() {
   drawSliders();
 
   // Add new particle system
-  ps_origin = new PVector(width/2, height/2); 
+  ps_origin = new PVector(width/2, height/2);
   ps = new ParticleSystem(ps_origin);
 }
 
 
-// DRAW SCENE EVERY FRAME 
+// DRAW SCENE EVERY FRAME
 void draw() {
-  background(0);  
+  background(0);
 
   // update particle system position
   //ps_origin.x = mouseX;
@@ -82,19 +90,22 @@ void draw() {
 
   // calculate and update all particle system elemets
   ps.run();
-  
-  // add new particle to the system every x frames 
-  if (frameCount % freq == 0){
-    stroke_color = cp5.get(ColorWheel.class,"strokeCol").getRGB();
-    fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB();    
-    ps.addParticle(control_points, max_radius, min_radius, growth, 
-                    life_span, fade_speed, ripple_width, shape_fill, 
-                    shape_strtoke, stroke_color, fill_color);
+
+  // ignore the coordinate of the heat from display
+  if (!(ps.origin.x == 400 && ps.origin.y == 100)){
+    // add new particle to the system every x frames 
+    if (frameCount % freq == 0){
+      stroke_color = cp5.get(ColorWheel.class,"strokeCol").getRGB();
+      fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB();
+      ps.addParticle(control_points, max_radius, min_radius, growth,
+                      life_span, fade_speed, ripple_width, shape_fill,
+                      shape_strtoke, stroke_color, fill_color);
+    }
   }
-  
+
   // Add a blur effect (might be slow on hight resolution canvas)
   //filter(BLUR, 2);
-  
+
 }
 
 
@@ -103,70 +114,70 @@ void oscEvent(OscMessage theOscMessage) {
   /* get and print the address pattern and the typetag of the received OscMessage */
   //println("### received an osc message with addrpattern "+theOscMessage.addrPattern()+" and typetag "+theOscMessage.typetag());
   //theOscMessage.print();
-  ps_origin = new PVector(theOscMessage.get(1).intValue()*100, theOscMessage.get(0).intValue()*100);
+  ps_origin = new PVector(theOscMessage.get(1).intValue()*scale_size, theOscMessage.get(0).intValue()*scale_size);
   println(ps_origin);
 }
 
 
 void drawSliders(){
-  
+
   cp5.addSlider("control_points")
     .setPosition(10,10)
-    .setSize(100,15)
+    .setSize(scale_size, scale_size/6)
     .setRange(4,100)
     ;
 
   cp5.addSlider("min_radius")
     .setPosition(10,30)
-    .setSize(100,15)
+    .setSize(scale_size, scale_size/6)
     .setRange(1,100)
     ;
 
   cp5.addSlider("max_radius")
     .setPosition(10,50)
-    .setSize(100,15)
+    .setSize(scale_size, scale_size/6)
     .setRange(1,100)
     ;
   
   cp5.addSlider("growth")
     .setPosition(10,70)
-    .setSize(100,15)
+    .setSize(scale_size, scale_size/6)
     .setRange(0,10)
     ;
 
   cp5.addSlider("life_span")
     .setPosition(10,90)
-    .setSize(100,15)
+    .setSize(scale_size, scale_size/6)
     .setRange(1, 255)
     .setValue(255)
     ;
 
   cp5.addSlider("fade_speed")
     .setPosition(10,110)
-    .setSize(100,15)
+    .setSize(scale_size, scale_size/6)
     .setRange(0,10)
     ;
   
   cp5.addSlider("ripple_width")
     .setPosition(10,130)
-    .setSize(100,15)
+    .setSize(scale_size, scale_size/6)
     .setRange(0,50)
     ;
 
   cp5.addSlider("freq")
     .setPosition(10,150)
-    .setSize(100,15)
+    .setSize(scale_size, scale_size/6)
     .setRange(1,100)
     ;    
 
   cp5.addToggle("shape_fill")
     .setPosition(10,170)
-    .setSize(30,15)
+    .setSize(scale_size/3, scale_size/6)
     .setCaptionLabel("fill")
      ;
   cp5.addToggle("shape_strtoke")
     .setPosition(50,170)
-    .setSize(30,15)
+    .setSize(scale_size/3, scale_size/6)
     .setCaptionLabel("stroke")
     ;
 
