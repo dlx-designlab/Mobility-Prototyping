@@ -7,11 +7,11 @@
 
 import controlP5.*;
 import java.util.Iterator;
-import oscP5.*;
-import netP5.*;
+//import oscP5.*;
+//import netP5.*;
 
-OscP5 oscP5;
-NetAddress myBroadcastLocation; 
+//OscP5 oscP5;
+//NetAddress myBroadcastLocation; 
 
 ControlP5 cp5;
 ParticleSystem ps;
@@ -53,13 +53,13 @@ int freq = 4;
 // SCENE SETUP
 void setup() {
   // Set Canvas Size
-  size(800, 800);
+  size(1920, 1080);
   frameRate(30);
 
 
   // OSC Server Setup
-  oscP5 = new OscP5(this,5005);
-  myBroadcastLocation = new NetAddress("127.0.1.1",5006);
+  //oscP5 = new OscP5(this,5005);
+  //myBroadcastLocation = new NetAddress("127.0.1.1",5006);
   
   // control panel
   cp5 = new ControlP5(this);
@@ -76,8 +76,8 @@ void draw() {
   background(0);  
 
   // update particle system position
-  //ps_origin.x = mouseX;
-  //ps_origin.y = mouseY;
+  ps_origin.x = mouseX;
+  ps_origin.y = mouseY;
   ps.origin = ps_origin.copy();
 
   // calculate and update all particle system elemets
@@ -99,13 +99,13 @@ void draw() {
 
 
 /* incoming osc message are forwarded to the oscEvent method. */
-void oscEvent(OscMessage theOscMessage) {
-  /* get and print the address pattern and the typetag of the received OscMessage */
-  //println("### received an osc message with addrpattern "+theOscMessage.addrPattern()+" and typetag "+theOscMessage.typetag());
-  //theOscMessage.print();
-  ps_origin = new PVector(theOscMessage.get(1).intValue()*100, theOscMessage.get(0).intValue()*100);
-  println(ps_origin);
-}
+//void oscEvent(OscMessage theOscMessage) {
+//  /* get and print the address pattern and the typetag of the received OscMessage */
+//  //println("### received an osc message with addrpattern "+theOscMessage.addrPattern()+" and typetag "+theOscMessage.typetag());
+//  //theOscMessage.print();
+//  ps_origin = new PVector(theOscMessage.get(1).intValue()*100, theOscMessage.get(0).intValue()*100);
+//  println(ps_origin);
+//}
 
 
 void drawSliders(){
