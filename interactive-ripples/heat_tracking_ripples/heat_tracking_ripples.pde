@@ -1,5 +1,5 @@
 import controlP5.*;
-import java.util.Iterator;
+import java.util.*;
 import ch.bildspur.realsense.*;
 import ch.bildspur.realsense.type.*;
 
@@ -38,10 +38,11 @@ color stroke_color = color(255, 255, 255);
 color fill_color = color(200, 200, 200);
 
 // how often to create a new particle (Higher value is slower)
-int freq = 4;
+int freq = 30;
 
 // ###  End of Deafault Sliders Values ####
 
+ArrayList<Integer> max_grid_list = new ArrayList();
 
 // SCENE SETUP
 void setup() {
@@ -77,54 +78,89 @@ void draw() {
     // read frames
     camera.readFrames();
     
-    //update particle system position
-    ps_origin.x = mouseX;
-    ps_origin.y = mouseY;
-    ps.origin = ps_origin.copy();
     
     if (frameCount % freq == 0) {
-      int back_right_count = 0;
-      int back_middle_count = 0;
-      int back_left_count = 0;
-      int front_right_count = 0;
-      int front_middle_count = 0;
-      int front_left_count = 0;
+        max_grid_list.clear();
+        // 1
+        int back_right_count = 0;
+        // 2
+        int back_middle_count = 0;
+        // 3
+        int back_left_count = 0;
+        // 4
+        int front_right_count = 0;
+        // 5
+        int front_middle_count = 0;
+        // 6 
+        int front_left_count = 0;
         for (int x = 0; x < width; x +=10) {
             for (int y = 0; y < height; y +=10) {
                 float d = camera.getDistance(x, y);
                 if (d > 0.6 && d <= 0.8) {
                     if (x >= 0 && x < width / 3) {
-                        println("back","right");
                         back_right_count += 1;
                     }
                     if (x >= width / 3 && x < width / 3 * 2) {
-                        println("back","middle");
                         back_middle_count += 1;
                     }
                     if (x >= width / 3 * 2 && x < width) {
-                        println("back","left");
                         back_left_count += 1;
                     }
                 }
                 if (d > 0.8 && d <= 1.0) {
                     if (x >= 0 && x < width / 3) {
-                        println("front","right");
                         front_right_count += 1;
                     }
                     if (x >= width / 3 && x < width / 3 * 2) {
-                        println("front","middle");
                         front_middle_count +=1;
                     }
                     if (x >= width / 3 * 2 && x < width) {
-                        println("front","left");
                         front_left_count += 1;
                     }
                 }
             }
         }
-
-        int [] max_grid_list = {back_right_count, back_middle_count, back_left_count, front_right_count, front_middle_count, front_left_count}
-        int max_grid_value = max(max_grid_list);
+        
+        max_grid_list.add(back_right_count);
+        max_grid_list.add(back_middle_count);
+        max_grid_list.add(back_left_count);
+        max_grid_list.add(front_right_count);
+        max_grid_list.add(front_middle_count);
+        max_grid_list.add(front_left_count);
+        
+        int max_index = max_grid_list.indexOf(Collections.max(max_grid_list));
+        println(max_index);
+        
+        //update particle system position
+        switch(max_index) {
+            case 0:
+            ps_origin.x = 520;
+            ps_origin.y = 360;
+            break;
+            case 1:
+            ps_origin.x = 310;
+            ps_origin.y = 360;
+            break;
+            case 2:
+            ps_origin.x = 100;
+            ps_origin.y = 360;
+            break;
+            case 3:
+            ps_origin.x = 520;
+            ps_origin.y = 120;
+            break;
+            case 4:
+            ps_origin.x = 310;
+            ps_origin.y = 120;
+            break;
+            case 5:
+            ps_origin.x = 100;
+            ps_origin.y = 120;
+            break;
+        }
+        ps.origin = ps_origin.copy();
+        println(ps.origin);
+        addParticles(ps);
     }
     
     //calculate and update all particle system elemets
@@ -135,13 +171,11 @@ void draw() {
 }
 
 void addParticles(ParticleSystem ps) {
-    if (frameCount % freq == 0) {
-        stroke_color = cp5.get(ColorWheel.class,"strokeCol").getRGB();
-        fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB();    
-        ps.addParticle(control_points, max_radius, min_radius, growth, 
-            life_span, fade_speed, ripple_width, shape_fill, 
-            shape_strtoke, stroke_color, fill_color);
-    }
+    stroke_color = cp5.get(ColorWheel.class,"strokeCol").getRGB();
+    fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB();    
+    ps.addParticle(control_points, max_radius, min_radius, growth, 
+        life_span, fade_speed, ripple_width, shape_fill, 
+        shape_strtoke, stroke_color, fill_color);
 }
 
 void drawSliders() {
