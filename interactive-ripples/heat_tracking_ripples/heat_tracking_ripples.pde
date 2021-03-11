@@ -42,11 +42,6 @@ int freq = 30;
 
 int scale_size = 100;
 
-// TODO: change scale
-// coordinate of the display heat
-int heat_from_display_origin_x = 500;
-int heat_from_display_origin_y = 100;
-
 // ###  End of Deafault Sliders Values ####
 
 ArrayList<Integer> max_grid_list = new ArrayList();
@@ -66,7 +61,6 @@ void setup() {
     camera.enableColorizer(ColorScheme.Cold);
     
     noCursor();
-    
     
     //control panel
     cp5 = new ControlP5(this);
@@ -88,52 +82,48 @@ void draw() {
     
     if (frameCount % freq == 0) {
         max_grid_list.clear();
-        // 1
-        int back_right_count = 0;
-        // 2
-        int back_middle_count = 0;
-        // 3
-        int back_left_count = 0;
-        // 4
-        int front_right_count = 0;
-        // 5
-        int front_middle_count = 0;
-        // 6 
-        int front_left_count = 0;
+
+        int zone_0_count = 0;
+        int zone_1_count = 0;
+        int zone_2_count = 0;
+        int zone_3_count = 0;
+        int zone_4_count = 0;
+        int zone_5_count = 0;
+
         for (int x = 0; x < width; x +=10) {
             for (int y = 0; y < height; y +=10) {
                 float d = camera.getDistance(x, y);
                 if (d > 0.6 && d <= 0.8) {
                     if (x >= 0 && x < width / 3) {
-                        back_right_count += 1;
+                        zone_0_count += 1;
                     }
                     if (x >= width / 3 && x < width / 3 * 2) {
-                        back_middle_count += 1;
+                        zone_1_count += 1;
                     }
                     if (x >= width / 3 * 2 && x < width) {
-                        back_left_count += 1;
+                        zone_2_count += 1;
                     }
                 }
                 if (d > 0.8 && d <= 1.0) {
                     if (x >= 0 && x < width / 3) {
-                        front_right_count += 1;
+                        zone_3_count += 1;
                     }
                     if (x >= width / 3 && x < width / 3 * 2) {
-                        front_middle_count +=1;
+                        zone_4_count += 1;
                     }
                     if (x >= width / 3 * 2 && x < width) {
-                        front_left_count += 1;
+                        zone_5_count += 1;
                     }
                 }
             }
         }
         
-        max_grid_list.add(back_right_count);
-        max_grid_list.add(back_middle_count);
-        max_grid_list.add(back_left_count);
-        max_grid_list.add(front_right_count);
-        max_grid_list.add(front_middle_count);
-        max_grid_list.add(front_left_count);
+        max_grid_list.add(zone_0_count);
+        max_grid_list.add(zone_1_count);
+        max_grid_list.add(zone_2_count);
+        max_grid_list.add(zone_3_count);
+        max_grid_list.add(zone_4_count);
+        max_grid_list.add(zone_5_count);
         
         int max_index = max_grid_list.indexOf(Collections.max(max_grid_list));
         println(max_index);
@@ -141,28 +131,28 @@ void draw() {
         //update particle system position
         switch(max_index) {
             case 0:
-            ps_origin.x = 520;
-            ps_origin.y = 360;
+            ps_origin.x = 100;
+            ps_origin.y = 120;
             break;
             case 1:
             ps_origin.x = 310;
-            ps_origin.y = 360;
+            ps_origin.y = 120;
             break;
             case 2:
-            ps_origin.x = 100;
-            ps_origin.y = 360;
-            break;
-            case 3:
             ps_origin.x = 520;
             ps_origin.y = 120;
             break;
+            case 3:
+            ps_origin.x = 100;
+            ps_origin.y = 360;
+            break;
             case 4:
             ps_origin.x = 310;
-            ps_origin.y = 120;
+            ps_origin.y = 360;
             break;
             case 5:
-            ps_origin.x = 100;
-            ps_origin.y = 120;
+            ps_origin.x = 520;
+            ps_origin.y = 360;
             break;
         }
         ps.origin = ps_origin.copy();
