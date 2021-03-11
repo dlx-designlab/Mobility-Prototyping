@@ -10,6 +10,9 @@ ControlP5 cp5;
 ParticleSystem ps;
 PVector ps_origin;
 
+int frameWidth = 1280;
+int frameHeight = 720;
+
 // ###  Deafault Sliders Values ####
 // How many points define the ripple shape
 int control_points = 31;
@@ -49,17 +52,16 @@ ArrayList<Integer> max_grid_list = new ArrayList();
 // SCENE SETUP
 void setup() {
     //Set Canvas Size
-    // size(640, 480);
-    size(1280, 720);
-    //frameRate(30);
+    size(0,0);
+    surface.setSize(frameWidth, frameHeight);
     camera.start();
-    
+
     //enable depth stream
     camera.enableDepthStream(width, height);
     camera.addThresholdFilter(0.5,1.2);
     
     //enable colorizer to display depth
-    camera.enableColorizer(ColorScheme.Cold);
+    // camera.enableColorizer(ColorScheme.Cold);
     
     noCursor();
     
@@ -75,7 +77,7 @@ void setup() {
 
 // DRAW SCENE EVERY FRAME
 void draw() {
-    background(0);  
+    background(0);
     
     // read frames
     camera.readFrames();
