@@ -49,7 +49,8 @@ ArrayList<Integer> max_grid_list = new ArrayList();
 // SCENE SETUP
 void setup() {
     //Set Canvas Size
-    size(640, 480);
+    // size(640, 480);
+    size(1280, 720);
     //frameRate(30);
     camera.start();
     
@@ -78,8 +79,7 @@ void draw() {
     
     // read frames
     camera.readFrames();
-    
-    
+
     if (frameCount % freq == 0) {
         max_grid_list.clear();
 
@@ -131,40 +131,41 @@ void draw() {
         //update particle system position
         switch(max_index) {
             case 0:
-            ps_origin.x = 100;
-            ps_origin.y = 120;
+            ps_origin.x = width/6;
+            ps_origin.y = height/4;
             break;
             case 1:
-            ps_origin.x = 310;
-            ps_origin.y = 120;
+            ps_origin.x = width/2;
+            ps_origin.y = height/4;
             break;
             case 2:
-            ps_origin.x = 520;
-            ps_origin.y = 120;
+            ps_origin.x = width/6*5;
+            ps_origin.y = height/4;
             break;
             case 3:
-            ps_origin.x = 100;
-            ps_origin.y = 360;
+            ps_origin.x = width/6;
+            ps_origin.y = height/4*3;
             break;
             case 4:
-            ps_origin.x = 310;
-            ps_origin.y = 360;
+            ps_origin.x = width/2;
+            ps_origin.y = height/4*3;
             break;
             case 5:
-            ps_origin.x = 520;
-            ps_origin.y = 360;
+            ps_origin.x = width/6*5;
+            ps_origin.y = height/4*3;
             break;
         }
         ps.origin = ps_origin.copy();
         println(ps.origin);
         addParticles(ps);
     }
-    
+
     //calculate and update all particle system elemets
     ps.run();
-    
-    //Add a blur effect (might be slow on hight resolution canvas)//filter(BLUR, 2);
-    
+
+    //Add a blur effect (might be slow on hight resolution canvas)
+
+    //filter(BLUR, 2);
 }
 
 void addParticles(ParticleSystem ps) {
