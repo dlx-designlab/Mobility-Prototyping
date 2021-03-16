@@ -9,7 +9,7 @@ class ShakeSystem {
     shakes = new ArrayList();
   }
  
-  void addShakes(int ctlPts, int maxRad, int minRad, float growRate, 
+  void addShake(int ctlPts, int maxRad, int minRad, float growRate, 
                     int lifeSpan, float fadeSpeed, int rippleWidth, 
                     boolean shapeFill, boolean shapeStrtoke, color strokeColor, color fillColor, int radiusRate) {
     shakes.add(new Shake(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed,
