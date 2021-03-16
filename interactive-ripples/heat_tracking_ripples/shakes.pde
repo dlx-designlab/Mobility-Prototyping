@@ -11,9 +11,9 @@ class ShakeSystem {
  
   void addShakes(int ctlPts, int maxRad, int minRad, float growRate, 
                     int lifeSpan, float fadeSpeed, int rippleWidth, 
-                    boolean shapeFill, boolean shapeStrtoke, color strokeColor, color fillColor) {
+                    boolean shapeFill, boolean shapeStrtoke, color strokeColor, color fillColor, int radiusRate) {
     shakes.add(new Shake(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed,
-                                rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor));
+                                rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor, radiusRate));
   }
 
   // Update all the arcs in the system
@@ -50,12 +50,12 @@ class Shake {
   boolean shapeStrtoke;
   color fillCol;
   color strokeCol;
-  int radiusR;
+  int radiusRate;
  
   // Coinstructor
   Shake(PVector l, int ctlPts, int maxR, int minR, float growRate, 
                     int lifeSpan, float fadeSpd, int rippleW, 
-                    boolean shpFill, boolean shpStrtoke, color strkColor, color fillColor, int radiusRate) {
+                    boolean shpFill, boolean shpStrtoke, color strkColor, color fillColor, int radiusR) {
     
     // How many points define the ripple shape
     numOfPoints = ctlPts;    
@@ -85,7 +85,7 @@ class Shake {
     shapeFill = shpFill;
     shapeStrtoke = shpStrtoke;
 
-    radiusR = radiusRate;
+    radiusRate = radiusR;
 
     // Calculate the center of the ripple
     // And the angle between the shape points
@@ -133,12 +133,12 @@ class Shake {
 
     // Draw arc
     beginShape();
-    curveVertex(location.x + pointsRadius[numOfPoints-1]*cos(angle*(numOfPoints-1))*radiusR, location.y - pointsRadius[numOfPoints-1]*sin(angle*(numOfPoints-1))*radiusR);
+    curveVertex(location.x + pointsRadius[numOfPoints-1]*cos(angle*(numOfPoints-1))*radiusRate, location.y - pointsRadius[numOfPoints-1]*sin(angle*(numOfPoints-1))*radiusRate);
     for(int i=0;i<numOfPoints;i++)
     {
-      curveVertex(location.x + pointsRadius[i]*cos(angle*i)*radiusR, location.y - pointsRadius[i]*sin(angle*i)*radiusR);
+      curveVertex(location.x + pointsRadius[i]*cos(angle*i)*radiusRate, location.y - pointsRadius[i]*sin(angle*i)*radiusRate);
     }
-    curveVertex(location.x + pointsRadius[0]*cos(0)*radiusR, location.y - pointsRadius[0]*sin(0)*radiusR); 
+    curveVertex(location.x + pointsRadius[0]*cos(0)*radiusRate, location.y - pointsRadius[0]*sin(0)*radiusRate); 
     // curveVertex(location.x + pointsRadius[1]*cos(angle), location.y - pointsRadius[1]*sin(angle)); 
     endShape();
   }
