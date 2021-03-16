@@ -1,28 +1,28 @@
-// THE PARTICLE SYSYEM CALSS
-class ParticleSystem {
-  ArrayList particles;
+// THE SHAKE SYSYEM CALSS
+class ShakeSystem {
+  ArrayList shakes;
   PVector origin;
 
   // Constructor
-  ParticleSystem(PVector location) {
+  ShakeSystem(PVector location) {
     origin = location.copy();
-    particles = new ArrayList();
+    shakes = new ArrayList();
   }
  
-  void addParticle(int ctlPts, int maxRad, int minRad, float growRate, 
+  void addShakes(int ctlPts, int maxRad, int minRad, float growRate, 
                     int lifeSpan, float fadeSpeed, int rippleWidth, 
                     boolean shapeFill, boolean shapeStrtoke, color strokeColor, color fillColor) {
-    particles.add(new Particle(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed, 
+    shakes.add(new Shake(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed,
                                 rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor));
   }
 
-  // Update all the particles in the system
+  // Update all the arcs in the system
   void run() {
-    Iterator<Particle> it = particles.iterator();
+    Iterator<Shake> it = shakes.iterator();
     while (it.hasNext()) {
-      Particle p = it.next();
-      p.run();
-      if (p.isDead()) {
+      Shake s = it.next();
+      s.run();
+      if (s.isDead()) {
         it.remove();
       }
     }
@@ -31,7 +31,7 @@ class ParticleSystem {
 
 
 // INDIVIDUAL PARTICLE CLASS
-class Particle {
+class Shake {
 
   // PVector velocity;
   // PVector acceleration;
@@ -50,11 +50,12 @@ class Particle {
   boolean shapeStrtoke;
   color fillCol;
   color strokeCol;
+  int radiusR;
  
   // Coinstructor
-  Particle(PVector l, int ctlPts, int maxR, int minR, float growRate, 
+  Shake(PVector l, int ctlPts, int maxR, int minR, float growRate, 
                     int lifeSpan, float fadeSpd, int rippleW, 
-                    boolean shpFill, boolean shpStrtoke, color strkColor, color fillColor) {
+                    boolean shpFill, boolean shpStrtoke, color strkColor, color fillColor, int radiusRate) {
     
     // How many points define the ripple shape
     numOfPoints = ctlPts;    
@@ -70,9 +71,9 @@ class Particle {
     // If the particle to be fully opaque when it first appears
     lifespan = lifeSpan; 
     
-    // how fast the particles fade
+    // how fast the arcs fade
     fadeSpeed = fadeSpd;
-    
+
     // The width of the ripple shape stroke (if used)
     rippleWidth = rippleW;    
     
@@ -84,11 +85,12 @@ class Particle {
     shapeFill = shpFill;
     shapeStrtoke = shpStrtoke;
 
+    radiusR = radiusRate;
+
     // Calculate the center of the ripple
     // And the angle between the shape points
     location = l.copy();
-    // angle = TWO_PI/(float)numOfPoints;
-    angle = PI/(float)numOfPoints;
+    angle = TWO_PI/(float)numOfPoints;
 
     // Fill the array of points which defines the ripple shape
     // Each array element is a random point-raduis, within the range: minRad <> maxRad
@@ -131,25 +133,14 @@ class Particle {
 
     // Draw arc
     beginShape();
-    curveVertex(location.x + pointsRadius[numOfPoints-1]*cos(angle*(numOfPoints-1)), location.y - pointsRadius[numOfPoints-1]*sin(angle*(numOfPoints-1)));
+    curveVertex(location.x + pointsRadius[numOfPoints-1]*cos(angle*(numOfPoints-1))*radiusR, location.y - pointsRadius[numOfPoints-1]*sin(angle*(numOfPoints-1))*radiusR);
     for(int i=0;i<numOfPoints;i++)
     {
-      curveVertex(location.x + pointsRadius[i]*cos(angle*i), location.y - pointsRadius[i]*sin(angle*i));
+      curveVertex(location.x + pointsRadius[i]*cos(angle*i)*radiusR, location.y - pointsRadius[i]*sin(angle*i)*radiusR);
     }
-    curveVertex(location.x + pointsRadius[0]*cos(0), location.y - pointsRadius[0]*sin(0)); 
+    curveVertex(location.x + pointsRadius[0]*cos(0)*radiusR, location.y - pointsRadius[0]*sin(0)*radiusR); 
     // curveVertex(location.x + pointsRadius[1]*cos(angle), location.y - pointsRadius[1]*sin(angle)); 
     endShape();
-
-    // Draw a ripple shape
-    // beginShape();
-    // curveVertex(location.x + pointsRadius[numOfPoints-1]*sin(angle*(numOfPoints-1)), location.y + pointsRadius[numOfPoints-1]*cos(angle*(numOfPoints-1)));
-    // for(int i=0;i<numOfPoints;i++)
-    // {
-    //   curveVertex(location.x + pointsRadius[i]*sin(angle*i), location.y + pointsRadius[i]*cos(angle*i));
-    // }
-    // curveVertex(location.x + pointsRadius[0]*sin(0), location.y + pointsRadius[0]*cos(0)); 
-    // curveVertex(location.x + pointsRadius[1]*sin(angle), location.y + pointsRadius[1]*cos(angle)); 
-    // endShape();
   }
 
   // Check if particle reached end of life
