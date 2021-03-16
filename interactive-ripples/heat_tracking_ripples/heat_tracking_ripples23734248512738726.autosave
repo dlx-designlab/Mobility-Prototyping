@@ -17,8 +17,11 @@ static final int DRIVESTOP = 3;
 
 int drawMode = RIPPLE;
 
-int camWidth = 848;
-int camHeight = 480;
+// int frameWidth = 640;
+// int frameHeight = 480;
+
+int frameWidth = 1280;
+int frameHeight = 720;
 
 // ###  Deafault Sliders Values ####
 // How many points define the ripple shape
@@ -59,12 +62,14 @@ ArrayList<Integer> max_grid_list = new ArrayList();
 // SCENE SETUP
 void setup() {
     //Set Canvas Size
+    // Error occurs when set in 1290, 720
     // size(640, 480);
-    size(2544, 1440);
+    size(1280, 720);
+    // surface.setSize(width, height);
     camera.start();
     
     //enable depth stream
-    camera.enableDepthStream(camWidth, camHeight);
+    camera.enableDepthStream(width, height);
     camera.addThresholdFilter(0.5,1.2);
     
     //enable colorizer to display depth
@@ -139,10 +144,10 @@ PVector getGridPosition(PVector ps_origin) {
     int zone_3_count = 0;
     int zone_4_count = 0;
     int zone_5_count = 0;
-    
-    for (int x = 0; x < width; x +=40) {
-        for (int y = 0; y < height; y +=40) {
-            float d = camera.getDistance(x/3, y/3);
+    rit
+    for (int x = 0; x < width; x +=10) {
+        for (int y = 0; y < height; y +=10) {
+            float d = camera.getDistance(x, y);
             if (d > 0.6 && d <= 0.8) {
                 if (x >= 0 && x < width / 3) {
                     zone_0_count += 1;
@@ -176,7 +181,7 @@ PVector getGridPosition(PVector ps_origin) {
     max_grid_list.add(zone_5_count);
     
     int max_index = 99;
-    int num_of_pixel_threshold = 100;
+    int num_of_pixel_threshold = 20;
     if (Collections.max(max_grid_list) < num_of_pixel_threshold) {
         max_index = 99;
     } else {
