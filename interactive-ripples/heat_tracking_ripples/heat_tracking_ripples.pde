@@ -17,6 +17,7 @@ static final int RIPPLE = 0;
 static final int ONBOARDING = 1;
 static final int DRIVESTART = 2;
 static final int DRIVESTOP = 3;
+static final int RAIN = 4;
 
 int drawMode = RIPPLE;
 
@@ -98,15 +99,19 @@ void draw() {
     
     switch(drawMode) {
         case(RIPPLE):
-        ps.origin.x = mouseButton.x;
-        ps.origin.y = mouseButton.y;
-        break;
-            
+            ps.run();
+            ps.origin.x = mouseX;
+            ps.origin.y = mouseY;
+            if (frameCount % freq == 0) {
+                addParticles(ps);
+            }
+            break;
+          
         case(ONBOARDING):
-        //calculate and update all particle system elemets
-        ps.run();
+            //calculate and update all particle system elemets
+            ps.run();
         freq = 60;
-        if(frameCount % freq == 0) {
+        if (frameCount % freq == 0) {
             ps.origin = getGridPosition(ps_origin).copy();
             addParticles(ps);
         }
@@ -118,10 +123,10 @@ void draw() {
         break;
         
         case(DRIVESTART):
-        break;
-
+            break;
+        
         case(DRIVESTOP):
-        ss.run();
+            ss.run();
         freq = 60;
         growth = 0.0;
         if (frameCount % freq == 3) {
@@ -141,15 +146,19 @@ void draw() {
             addShakes(ss, 20, 25);
         }
         break;
+
+        case(RAIN):
+        break;
     }
 }
 
 void keyPressed() {
     switch(key) {
-        case('r') : drawMode = RIPPLE; break;
+        case('e') : drawMode = RIPPLE; break;
         case('o') : drawMode = ONBOARDING; break;
         case('s') : drawMode = DRIVESTART; break;
         case('p') : drawMode = DRIVESTOP; break;
+        case('r') : drawMode = RAIN; break;
     }
 }
 
@@ -181,8 +190,9 @@ PVector getGridPosition(PVector vector_origin) {
     int zone_5_count = 0;
     
     // Step has direct impact to performance. Change according to canvas size.
-    for (int x = 0; x < width; x +=40) {
-        for (int y = 0; y < height; y +=40) {
+    int step = 40;
+    for (int x = 0; x < width; x +=step) {
+        for (int y = 0; y < height; y +=step) {
             float d = camera.getDistance(x / 3, y / 3);
             if (d > 0.5 && d <= 0.8) {
                 if (x >= 0 && x < width / 3) {
@@ -252,6 +262,7 @@ PVector getGridPosition(PVector vector_origin) {
         vector_origin.x = width / 6;
         vector_origin.y = height / 4 * 3;
         break;
+        // case not to display on screen
         case 99:
         vector_origin.x = width * 10;
         vector_origin.y = height * 10;
