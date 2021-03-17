@@ -108,7 +108,6 @@ void draw() {
             break;
           
         case(ONBOARDING):
-            //calculate and update all particle system elemets
             ps.run();
         freq = 60;
         if (frameCount % freq == 0) {
@@ -118,11 +117,21 @@ void draw() {
         if ((frameCount % freq == 10) || (frameCount % freq == 15) || (frameCount % freq == 20)) {
             addParticles(ps);
         }
-        //Add a blur effect (might be slow on hight resolution canvas)
-        //filter(BLUR, 2);
         break;
         
         case(DRIVESTART):
+            ss.run();
+        freq = 60;
+        growth = 0.0;
+        // TODO: fade param needed
+        if (frameCount % freq == 3) {
+            ss.origin = getGridPosition(ss_origin).copy();
+            addShakes(ss, 60, 65);
+            addShakes(ss, 50, 55);
+            addShakes(ss, 40, 45);
+            addShakes(ss, 30, 35);
+            addShakes(ss, 20, 25);
+        }
             break;
         
         case(DRIVESTOP):
