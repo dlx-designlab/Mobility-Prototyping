@@ -2,6 +2,8 @@ import controlP5.*;
 import java.util.*;
 import ch.bildspur.realsense.*;
 import ch.bildspur.realsense.type.*;
+import processing.video.*;
+Movie paymentMovie;
 
 RealSenseCamera camera = new RealSenseCamera(this);
 
@@ -18,6 +20,8 @@ static final int ONBOARDING = 1;
 static final int DRIVESTART = 2;
 static final int DRIVESTOP = 3;
 static final int RAIN = 4;
+static final int PAYMENT = 5;
+
 
 int drawMode = RIPPLE;
 
@@ -26,13 +30,16 @@ int drawMode = RIPPLE;
 int camWidth = 848;
 int camHeight = 480;
 
+int movieWidth = 848;
+int movieHeight = 477;
+
 // ###  Default Sliders Values ####
 // How many points define the ripple shape
 int control_points = 31;
 
 // How wiggly the shape will be
-int max_radius = 13;
-int min_radius = 9;
+int max_radius = 55;
+int min_radius = 50;
 
 //how fast will the ripple grow/expand 
 float growth = 1.8;
@@ -86,11 +93,16 @@ void setup() {
     // Add new shake system
     ss_origin = new PVector(width / 2, height / 2); 
     ss = new ShakeSystem(ss_origin);
+
+    paymentMovie = new Movie(this,"payment-reminder_1.mov");
+    paymentMovie.loop();
+    paymentMovie.play();
 }
 
 
 // DRAW SCENE EVERY FRAME
 void draw() {
+    println(frameRate);
     background(0);
     
     // read frames
@@ -114,60 +126,71 @@ void draw() {
             ps.origin = getGridPosition(ps_origin).copy();
             addParticles(ps);
         }
-        if ((frameCount % freq == 10) || (frameCount % freq == 15) || (frameCount % freq == 20)) {
+        if ((frameCount % freq == 20) || (frameCount % freq == 25) || (frameCount % freq == 30)) {
             addParticles(ps);
         }
         break;
         
         case(DRIVESTART):
             ss.run();
-        freq = 60;
-        growth = 0.0;
-        // TODO: fade param needed
-        if (frameCount % freq == 3) {
+            freq = 60;
+            growth = 0.0;
+            // TODO: fade param needed
+            if (frameCount % freq == 3) {
             ss.origin = getGridPosition(ss_origin).copy();
             addShakes(ss, 60, 65);
             addShakes(ss, 50, 55);
             addShakes(ss, 40, 45);
             addShakes(ss, 30, 35);
             addShakes(ss, 20, 25);
-        }
+            }
             break;
         
         case(DRIVESTOP):
             ss.run();
-        freq = 60;
-        growth = 0.0;
-        if (frameCount % freq == 3) {
-            ss.origin = getGridPosition(ss_origin).copy();
-            addShakes(ss, 60, 65);
-        }
-        if (frameCount % freq == 6) {
-            addShakes(ss, 50, 55);
-        }
-        if (frameCount % freq == 9) {
-            addShakes(ss, 40, 45);
-        }
-        if (frameCount % freq == 12) {
-            addShakes(ss, 30, 35);
-        }
-        if (frameCount % freq == 15) {
-            addShakes(ss, 20, 25);
-        }
-        break;
+            freq = 60;
+            growth = 0.0;
+            if (frameCount % freq == 3) {
+                ss.origin = getGridPosition(ss_origin).copy();
+                addShakes(ss, 60, 65);
+            }
+            if (frameCount % freq == 6) {
+                addShakes(ss, 50, 55);
+            }
+            if (frameCount % freq == 9) {
+                addShakes(ss, 40, 45);
+            }
+            if (frameCount % freq == 12) {
+                addShakes(ss, 30, 35);
+            }
+            if (frameCount % freq == 15) {
+                addShakes(ss, 20, 25);
+            }
+            break;
 
         case(RAIN):
         break;
+        case(PAYMENT):
+            ps.origin = getGridPosition(ps_origin).copy();
+            image(paymentMovie, ps.origin.x - movieWidth/2, ps.origin.y - movieHeight/2, movieWidth, movieHeight);
+            break;
     }
+}
+
+void movieEvent(Movie paymentMovie){
+    paymentMovie.read();
 }
 
 void keyPressed() {
     switch(key) {
         case('e') : drawMode = RIPPLE; break;
         case('o') : drawMode = ONBOARDING; break;
+        // TODO:
         case('s') : drawMode = DRIVESTART; break;
         case('p') : drawMode = DRIVESTOP; break;
+        // TOOO:
         case('r') : drawMode = RAIN; break;
+        case('1'): drawMode = PAYMENT; break;
     }
 }
 
