@@ -20,7 +20,13 @@ static final int ONBOARDING = 1;
 static final int DRIVESTART = 2;
 static final int DRIVESTOP = 3;
 static final int RAIN = 4;
+
+int numMovies = 3;
+Movie[] playlist = new Movie[numMovies]; 
+int currentMovieIndex  = 1;
 static final int PAYMENT = 5;
+static final int INFOLINE = 6;
+static final int INFOLINEDELAY = 7;
 
 
 int drawMode = RIPPLE;
@@ -94,15 +100,15 @@ void setup() {
     ss_origin = new PVector(width / 2, height / 2); 
     ss = new ShakeSystem(ss_origin);
 
-    paymentMovie = new Movie(this,"payment-reminder_1.mov");
-    paymentMovie.loop();
-    paymentMovie.play();
+    playlist[0]= new Movie(this,"payment-reminder_1.mov");
+    playlist[1]= new Movie(this,"info-line.mov");
+    playlist[2]= new Movie(this,"info-line-super-delay.mov");
+    playlist[currentMovieIndex].loop();
 }
 
 
 // DRAW SCENE EVERY FRAME
 void draw() {
-    println(frameRate);
     background(0);
     
     // read frames
@@ -171,14 +177,37 @@ void draw() {
         case(RAIN):
         break;
         case(PAYMENT):
-            ps.origin = getGridPosition(ps_origin).copy();
-            image(paymentMovie, ps.origin.x - movieWidth/2, ps.origin.y - movieHeight/2, movieWidth, movieHeight);
+            if (playlist!=null) {
+                playlist[currentMovieIndex].stop();
+                currentMovieIndex = 0;
+                ps.origin = getGridPosition(ps_origin).copy();
+                playlist[currentMovieIndex].loop();
+                image(playlist[currentMovieIndex], ps.origin.x - movieWidth/2, ps.origin.y - movieHeight/2, movieWidth, movieHeight);
+            }
+            break;
+        case(INFOLINE):
+            if (playlist!=null) {
+                playlist[currentMovieIndex].stop();
+                currentMovieIndex = 1;
+                ps.origin = getGridPosition(ps_origin).copy();
+                playlist[currentMovieIndex].loop();
+                image(playlist[currentMovieIndex], ps.origin.x - movieWidth/2, ps.origin.y - movieHeight/2, movieWidth, movieHeight);
+            }
+            break;
+        case(INFOLINEDELAY):
+            if (playlist!=null) {
+                playlist[currentMovieIndex].stop();
+                currentMovieIndex = 2;
+                ps.origin = getGridPosition(ps_origin).copy();
+                playlist[currentMovieIndex].loop();
+                image(playlist[currentMovieIndex], ps.origin.x - movieWidth/2, ps.origin.y - movieHeight/2, movieWidth, movieHeight);
+            }
             break;
     }
 }
 
-void movieEvent(Movie paymentMovie){
-    paymentMovie.read();
+void movieEvent(Movie m){
+    m.read();
 }
 
 void keyPressed() {
@@ -190,7 +219,10 @@ void keyPressed() {
         case('p') : drawMode = DRIVESTOP; break;
         // TOOO:
         case('r') : drawMode = RAIN; break;
-        case('1'): drawMode = PAYMENT; break;
+        // movies
+        case('0'): drawMode = PAYMENT; break;
+        case('1'): drawMode = INFOLINE; break;
+        case('2'): drawMode = INFOLINEDELAY; break;
     }
 }
 
@@ -237,7 +269,7 @@ PVector getGridPosition(PVector vector_origin) {
                     zone_2_count += 1;
                 }
             }
-            if (d > 0.8 && d <= 1.1) {
+            if (d > 0.8 && d <= 1.2) {
                 if (x >= 0 && x < width / 3) {
                     zone_3_count += 1;
                 }
