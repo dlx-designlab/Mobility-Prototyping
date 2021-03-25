@@ -15,6 +15,8 @@ ShakeSystem ss;
 PVector ps_origin;
 PVector ss_origin;
 
+int currentGridIndex = 99;
+
 static final int RIPPLE = 0;
 static final int ONBOARDING = 1;
 static final int DRIVESTART = 2;
@@ -99,10 +101,10 @@ void setup() {
     // Add new shake system
     ss_origin = new PVector(width / 2, height / 2); 
     ss = new ShakeSystem(ss_origin);
-
-    playlist[0]= new Movie(this,"payment-reminder_1.mov");
-    playlist[1]= new Movie(this,"info-line.mov");
-    playlist[2]= new Movie(this,"info-line-super-delay.mov");
+    
+    playlist[0] = new Movie(this,"payment-reminder_1.mov");
+    playlist[1] = new Movie(this,"info-line.mov");
+    playlist[2] = new Movie(this,"info-line-super-delay.mov");
     playlist[currentMovieIndex].loop();
 }
 
@@ -118,18 +120,19 @@ void draw() {
     switch(drawMode) {
         case(RIPPLE):
             ps.run();
-            ps.origin.x = mouseX;
-            ps.origin.y = mouseY;
-            if (frameCount % freq == 0) {
-                addParticles(ps);
-            }
-            break;
-          
+        ps.origin.x = mouseX;
+        ps.origin.y = mouseY;
+        if (frameCount % freq == 0) {
+            addParticles(ps);
+        }
+        break;
+        
         case(ONBOARDING):
             ps.run();
         freq = 60;
         if (frameCount % freq == 0) {
-            ps.origin = getGridPosition(ps_origin).copy();
+            currentGridIndex = getGridIndex(ps_origin);
+            ps.origin = getGridPosition(currentGridIndex).copy();
             addParticles(ps);
         }
         if ((frameCount % freq == 20) || (frameCount % freq == 25) || (frameCount % freq == 30)) {
@@ -139,74 +142,80 @@ void draw() {
         
         case(DRIVESTART):
             ss.run();
-            freq = 60;
-            growth = 0.0;
-            // TODO: fade param needed
-            if (frameCount % freq == 3) {
-            ss.origin = getGridPosition(ss_origin).copy();
+        freq = 60;
+        growth = 0.0;
+        // TODO: fade param needed
+        if (frameCount % freq == 3) {
+            currentGridIndex = getGridIndex(ss_origin);
+            ss.origin = getGridPosition(currentGridIndex).copy();
             addShakes(ss, 60, 65);
             addShakes(ss, 50, 55);
             addShakes(ss, 40, 45);
             addShakes(ss, 30, 35);
             addShakes(ss, 20, 25);
-            }
-            break;
+        }
+        break;
         
         case(DRIVESTOP):
             ss.run();
-            freq = 60;
-            growth = 0.0;
-            if (frameCount % freq == 3) {
-                ss.origin = getGridPosition(ss_origin).copy();
-                addShakes(ss, 60, 65);
-            }
-            if (frameCount % freq == 6) {
-                addShakes(ss, 50, 55);
-            }
-            if (frameCount % freq == 9) {
-                addShakes(ss, 40, 45);
-            }
-            if (frameCount % freq == 12) {
-                addShakes(ss, 30, 35);
-            }
-            if (frameCount % freq == 15) {
-                addShakes(ss, 20, 25);
-            }
-            break;
-
-        case(RAIN):
+        freq = 60;
+        growth = 0.0;
+        if (frameCount % freq == 3) {
+            currentGridIndex = getGridIndex(ss_origin);
+            ss.origin = getGridPosition(currentGridIndex).copy();
+            addShakes(ss, 60, 65);
+        }
+        if (frameCount % freq == 6) {
+            addShakes(ss, 50, 55);
+        }
+        if (frameCount % freq == 9) {
+            addShakes(ss, 40, 45);
+        }
+        if (frameCount % freq == 12) {
+            addShakes(ss, 30, 35);
+        }
+        if (frameCount % freq == 15) {
+            addShakes(ss, 20, 25);
+        }
         break;
+        
+        case(RAIN):
+            break;
         case(PAYMENT):
-            if (playlist!=null) {
+            if (playlist!= null) {
                 playlist[currentMovieIndex].stop();
                 currentMovieIndex = 0;
-                ps.origin = getGridPosition(ps_origin).copy();
-                playlist[currentMovieIndex].loop();
-                image(playlist[currentMovieIndex], ps.origin.x - movieWidth/2, ps.origin.y - movieHeight/2, movieWidth, movieHeight);
-            }
-            break;
+            currentGridIndex = getGridIndex(ps_origin);
+            ps.origin = getGridPosition(currentGridIndex).copy();
+            addShakes(ss, 60, 65);
+            playlist[currentMovieIndex].loop();
+            image(playlist[currentMovieIndex], ps.origin.x - movieWidth / 2, ps.origin.y - movieHeight / 2, movieWidth, movieHeight);
+        }
+        break;
         case(INFOLINE):
-            if (playlist!=null) {
+            if (playlist!= null) {
                 playlist[currentMovieIndex].stop();
                 currentMovieIndex = 1;
-                ps.origin = getGridPosition(ps_origin).copy();
-                playlist[currentMovieIndex].loop();
-                image(playlist[currentMovieIndex], ps.origin.x - movieWidth/2, ps.origin.y - movieHeight/2, movieWidth, movieHeight);
-            }
-            break;
+            currentGridIndex = getGridIndex(ps_origin);
+            ps.origin = getGridPosition(currentGridIndex).copy();
+            playlist[currentMovieIndex].loop();
+            image(playlist[currentMovieIndex], ps.origin.x - movieWidth / 2, ps.origin.y - movieHeight / 2, movieWidth, movieHeight);
+        }
+        break;
         case(INFOLINEDELAY):
-            if (playlist!=null) {
+            if (playlist!= null) {
                 playlist[currentMovieIndex].stop();
                 currentMovieIndex = 2;
-                ps.origin = getGridPosition(ps_origin).copy();
-                playlist[currentMovieIndex].loop();
-                image(playlist[currentMovieIndex], ps.origin.x - movieWidth/2, ps.origin.y - movieHeight/2, movieWidth, movieHeight);
-            }
-            break;
+            currentGridIndex = getGridIndex(ps_origin);
+            ps.origin = getGridPosition(currentGridIndex).copy();
+            playlist[currentMovieIndex].loop();
+            image(playlist[currentMovieIndex], ps.origin.x - movieWidth / 2, ps.origin.y - movieHeight / 2, movieWidth, movieHeight);
+        }
+        break;
     }
 }
 
-void movieEvent(Movie m){
+void movieEvent(Movie m) {
     m.read();
 }
 
@@ -220,9 +229,9 @@ void keyPressed() {
         // TOOO:
         case('r') : drawMode = RAIN; break;
         // movies
-        case('0'): drawMode = PAYMENT; break;
-        case('1'): drawMode = INFOLINE; break;
-        case('2'): drawMode = INFOLINEDELAY; break;
+        case('0') : drawMode = PAYMENT; break;
+        case('1') : drawMode = INFOLINE; break;
+        case('2') : drawMode = INFOLINEDELAY; break;
     }
 }
 
@@ -243,7 +252,7 @@ void addShakes(ShakeSystem ss, int min_radius, int max_radius) {
 }
 
 // logic for determining the grid position from the depth sensor input
-PVector getGridPosition(PVector vector_origin) {
+int getGridIndex(PVector vector_origin) {
     max_grid_list.clear();
     
     int zone_0_count = 0;
@@ -299,6 +308,11 @@ PVector getGridPosition(PVector vector_origin) {
     }
     println(max_index);
     println(max_grid_list);
+    return max_index;
+}
+
+PVector getGridPosition(int max_index) {
+    PVector vector_origin = new PVector(width*10, height*10); 
     
     //update particle system position
     switch(max_index) {
