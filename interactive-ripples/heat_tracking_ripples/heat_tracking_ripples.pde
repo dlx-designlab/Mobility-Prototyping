@@ -15,6 +15,8 @@ ShakeSystem ss;
 PVector ps_origin;
 PVector ss_origin;
 PVector movie_origin;
+float [][] ps_origin_list = new float[20][2];
+int [] radius_list = new int[20];
 
 int currentGridIndex = 99;
 
@@ -189,11 +191,14 @@ void draw() {
         case(RAIN):
             ps.run();
             currentGridIndex = getGridIndex(ps_origin);
+            freq = 60;
             switch(currentGridIndex){
                 case 0:
+                    freq = 60;
+                    growth = 10;
                     if (frameCount % freq == 0) {
-                        for(int i=0; i<100; i++){ 
-                            int x = (int)random(width); 
+                        for(int i=0; i<20; i++){
+                            int x = (int)random(width);
                             ps.origin.x = x;
                             if (x > width*2/3) {
                                 int y = (int)random(height/2, height);
@@ -202,14 +207,39 @@ void draw() {
                                 int y = (int)random(height);
                                 ps.origin.y = y;
                             }
+                            max_radius = (int)random(100);
+                            min_radius = max_radius;
+                            ps_origin_list[i][0] = ps.origin.x;
+                            ps_origin_list[i][1] = ps.origin.y;
+                            radius_list[i] = max_radius;
+                            addParticles(ps);
+                        }
+                    }
+                    if (frameCount % freq == 10) {
+                        for(int i=0; i<20; i++){ 
+                            ps.origin.x = ps_origin_list[i][0];
+                            ps.origin.y = ps_origin_list[i][1];
+                            max_radius = radius_list[i];
+                            min_radius = max_radius;
+                            addParticles(ps);
+                        }
+                    }
+                    if (frameCount % freq == 15) {
+                        for(int i=0; i<20; i++){ 
+                            ps.origin.x = ps_origin_list[i][0];
+                            ps.origin.y = ps_origin_list[i][1];
+                            max_radius = radius_list[i];
+                            min_radius = max_radius;
                             addParticles(ps);
                         }
                     }
                     break;
                 case 1:
+                    freq = 60;
+                    growth = 10;
                     if (frameCount % freq == 0) {
-                        for(int i=0; i<100; i++){ 
-                            int x = (int)random(width); 
+                        for(int i=0; i<20; i++){
+                            int x = (int)random(width);
                             ps.origin.x = x;
                             if (x < width*2/3 && x > width/3) {
                                 int y = (int)random(height/2, height);
@@ -218,13 +248,36 @@ void draw() {
                                 int y = (int)random(height);
                                 ps.origin.y = y;
                             }
+                            max_radius = (int)random(100);
+                            min_radius = max_radius;
+                            ps_origin_list[i][0] = ps.origin.x;
+                            ps_origin_list[i][1] = ps.origin.y;
+                            radius_list[i] = max_radius;
+                            addParticles(ps);
+                        }
+                    }
+                    if (frameCount % freq == 10) {
+                        for(int i=0; i<20; i++){ 
+                            ps.origin.x = ps_origin_list[i][0];
+                            ps.origin.y = ps_origin_list[i][1];
+                            max_radius = radius_list[i];
+                            min_radius = max_radius;
+                            addParticles(ps);
+                        }
+                    }
+                    if (frameCount % freq == 15) {
+                        for(int i=0; i<20; i++){ 
+                            ps.origin.x = ps_origin_list[i][0];
+                            ps.origin.y = ps_origin_list[i][1];
+                            max_radius = radius_list[i];
+                            min_radius = max_radius;
                             addParticles(ps);
                         }
                     }
                     break;
                 case 2:
                     if (frameCount % freq == 0) {
-                        for(int i=0; i<100; i++){ 
+                        for(int i=0; i<20; i++){ 
                             int x = (int)random(width); 
                             ps.origin.x = x;
                             if (x < width/3) {
@@ -234,13 +287,24 @@ void draw() {
                                 int y = (int)random(height);
                                 ps.origin.y = y;
                             }
+                            max_radius = (int)random(100);
+                            min_radius = max_radius;
                             addParticles(ps);
                         }
+                    }
+                    if (frameCount % freq == 20) {
+                        addParticles(ps);
+                    }
+                    if (frameCount % freq == 25) {
+                        addParticles(ps);
+                    }
+                    if (frameCount % freq == 30) {
+                        addParticles(ps);
                     }
                     break;
                 case 3:
                     if (frameCount % freq == 0) {
-                        for(int i=0; i<100; i++){ 
+                        for(int i=0; i<20; i++){ 
                             int x = (int)random(width); 
                             ps.origin.x = x;
                             if (x > width*2/3) {
@@ -250,6 +314,8 @@ void draw() {
                                 int y = (int)random(height);
                                 ps.origin.y = y;
                             }
+                            max_radius = (int)random(100);
+                            min_radius = max_radius;
                             addParticles(ps);
                         }
                     }
@@ -257,7 +323,7 @@ void draw() {
 
                 case 4:
                     if (frameCount % freq == 0) {
-                        for(int i=0; i<100; i++){ 
+                        for(int i=0; i<20; i++){ 
                             int x = (int)random(width); 
                             ps.origin.x = x;
                             if (x < width*2/3 && x > width/3) {
@@ -267,6 +333,8 @@ void draw() {
                                 int y = (int)random(height);
                                 ps.origin.y = y;
                             }
+                            max_radius = (int)random(100);
+                            min_radius = max_radius;
                             addParticles(ps);
                         }
                     }
@@ -274,7 +342,7 @@ void draw() {
 
                 case 5:
                     if (frameCount % freq == 0) {
-                        for(int i=0; i<100; i++){ 
+                        for(int i=0; i<20; i++){ 
                             int x = (int)random(width); 
                             ps.origin.x = x;
                             if (x < width/3) {
@@ -284,6 +352,8 @@ void draw() {
                                 int y = (int)random(height);
                                 ps.origin.y = y;
                             }
+                            max_radius = (int)random(100);
+                            min_radius = max_radius;
                             addParticles(ps);
                         }
                     }
@@ -360,6 +430,7 @@ void addShakes(ShakeSystem ss, int min_radius, int max_radius) {
         shape_strtoke, stroke_color, fill_color, radiusRate);
 }
 
+
 // logic for determining the grid position from the depth sensor input
 int getGridIndex(PVector vector_origin) {
     max_grid_list.clear();
@@ -415,7 +486,7 @@ int getGridIndex(PVector vector_origin) {
     } else {
         max_index = max_grid_list.indexOf(Collections.max(max_grid_list));
     }
-    println(max_grid_list);
+    // println(max_grid_list);
     return max_index;
 }
 
