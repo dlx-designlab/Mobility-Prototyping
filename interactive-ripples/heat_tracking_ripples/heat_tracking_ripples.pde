@@ -283,33 +283,36 @@ void draw() {
             break;
 
         case(PAYMENT):
+            ps.run();
             if (playlist!= null) {
-                playlist[currentMovieIndex].stop();
+                // playlist[currentMovieIndex].stop();
                 currentMovieIndex = 0;
                 currentGridIndex = getGridIndex(ps_origin);
-                movie_origin = getGridPosition(currentGridIndex).copy();
+                ps_origin = getGridPosition(currentGridIndex).copy();
                 playlist[currentMovieIndex].loop();
-                image(playlist[currentMovieIndex], movie_origin.x - movieWidth / 2, movie_origin.y - movieHeight / 2, movieWidth, movieHeight);
+                image(playlist[currentMovieIndex], ps_origin.x - movieWidth / 2, ps_origin.y - movieHeight / 2, movieWidth, movieHeight);
             }
             break;
         case(INFOLINE):
+            ps.run();
             if (playlist!= null) {
-                playlist[currentMovieIndex].stop();
+                // playlist[currentMovieIndex].stop();
                 currentMovieIndex = 1;
                 currentGridIndex = getGridIndex(ps_origin);
                 movie_origin = getGridPosition(currentGridIndex).copy();
                 playlist[currentMovieIndex].loop();
-                image(playlist[currentMovieIndex], movie_origin.x - movieWidth / 2, movie_origin.y - movieHeight / 2, movieWidth, movieHeight);
+                image(playlist[currentMovieIndex], ps_origin.x - movieWidth / 2, ps_origin.y - movieHeight / 2, movieWidth, movieHeight);
             }
             break;
         case(INFOLINEDELAY):
+            ps.run();
             if (playlist!= null) {
-                playlist[currentMovieIndex].stop();
+                // playlist[currentMovieIndex].stop();
                 currentMovieIndex = 2;
                 currentGridIndex = getGridIndex(ps_origin);
                 movie_origin = getGridPosition(currentGridIndex).copy();
                 playlist[currentMovieIndex].loop();
-                image(playlist[currentMovieIndex], movie_origin.x - movieWidth / 2, movie_origin.y - movieHeight / 2, movieWidth, movieHeight);
+                image(playlist[currentMovieIndex], ps_origin.x - movieWidth / 2, ps_origin.y - movieHeight / 2, movieWidth, movieHeight);
             }
             break;
     }
