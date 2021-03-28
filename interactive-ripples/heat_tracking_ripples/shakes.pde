@@ -11,9 +11,9 @@ class ShakeSystem {
  
   void addShake(int ctlPts, int maxRad, int minRad, float growRate, 
                     int lifeSpan, float fadeSpeed, int rippleWidth, 
-                    boolean shapeFill, boolean shapeStrtoke, color strokeColor, color fillColor, int radiusRate) {
+                    boolean shapeFill, boolean shapeStrtoke, color strokeColor, color fillColor, int radiusRate, float circleSize) {
     shakes.add(new Shake(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed,
-                                rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor, radiusRate));
+                                rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor, radiusRate, circleSize));
   }
 
   // Update all the arcs in the system
@@ -51,11 +51,12 @@ class Shake {
   color fillCol;
   color strokeCol;
   int radiusRate;
+  float circSize;
  
   // Coinstructor
   Shake(PVector l, int ctlPts, int maxR, int minR, float growRate, 
                     int lifeSpan, float fadeSpd, int rippleW, 
-                    boolean shpFill, boolean shpStrtoke, color strkColor, color fillColor, int radiusR) {
+                    boolean shpFill, boolean shpStrtoke, color strkColor, color fillColor, int radiusR, float circleSize) {
     
     // How many points define the ripple shape
     numOfPoints = ctlPts;    
@@ -63,6 +64,8 @@ class Shake {
     // How wiggly the shape will be
     maxRad = maxR;
     minRad = minR;
+
+    circSize = circleSize;
     
     //how fast will the ripple grow/expand 
     growth = growRate;
@@ -87,10 +90,12 @@ class Shake {
 
     radiusRate = radiusR;
 
+    
+
     // Calculate the center of the ripple
     // And the angle between the shape points
     location = l.copy();
-    angle = TWO_PI/(float)numOfPoints;
+    angle = TWO_PI*circSize/(float)numOfPoints;
 
     // Fill the array of points which defines the ripple shape
     // Each array element is a random point-raduis, within the range: minRad <> maxRad
