@@ -10,13 +10,18 @@ RealSenseCamera camera = new RealSenseCamera(this);
 
 ControlP5 cp5;
 ParticleSystem ps;
+ParticleSystem _ps_2;
 ShakeSystem ss;
 
 PVector ps_origin;
+PVector _ps_origin_2;
 PVector ss_origin;
 PVector movie_origin;
-float [][] ps_origin_list = new float[4][2];
-int [] radius_list = new int[20];
+int rain_num = 10;
+float [][] _ps_origin_list = new float[rain_num][2];
+float [][] _ps_origin_list_2 = new float[rain_num][2];
+int [] _radius_list = new int[rain_num];
+int [] _radius_list_2 = new int[rain_num];
 
 int currentGridIndex = 99;
 
@@ -106,7 +111,9 @@ void setup() {
     
     //Add new particle system
     ps_origin = new PVector(width*10, height*10); 
+    _ps_origin_2 = new PVector(width*10, height*10); 
     ps = new ParticleSystem(ps_origin);
+    _ps_2 = new ParticleSystem(_ps_origin_2);
     
     
     // Add new shake system
@@ -212,11 +219,11 @@ void draw() {
             break;
 
         case(RAIN):
-            drawRain(0);
+            drawRain(0, ps_origin, ps, _ps_origin_list, _radius_list, rain_num);
             // drawRain(2);
-            drawRain(4);
+            drawRain(4, _ps_origin_2, _ps_2, _ps_origin_list_2, _radius_list_2, rain_num);
             // drawRain(6);
-            drawRain(8);
+            // drawRain(8);
             break;
 
         case(HEATWAVE):
@@ -316,14 +323,14 @@ void addShakes(ShakeSystem ss, int min_radius, int max_radius) {
         shape_strtoke, stroke_color, fill_color, radiusRate, circle_size);
 }
 
-void drawRain(int startFreq) {
+void drawRain(int startFreq, PVector ps_origin, ParticleSystem ps, float[][] ps_origin_list, int[] radius_list, int rain_num) {
         ps.run();
         currentGridIndex = getGridIndex(ps_origin);
         freq = 60;
         growth = 6;
         life_span = 300;
         if (frameCount % freq == startFreq) {
-            for(int i=0; i<4; i++){
+            for(int i=0; i<rain_num; i++){
                 int x = (int)random(width);
                 ps.origin.x = x;
                 switch (currentGridIndex) {
@@ -391,7 +398,7 @@ void drawRain(int startFreq) {
             }
         }
         if (frameCount % freq == startFreq + 15) {
-            for(int i=0; i<4; i++){ 
+            for(int i=0; i<rain_num; i++){ 
                 ps.origin.x = ps_origin_list[i][0];
                 ps.origin.y = ps_origin_list[i][1];
                 max_radius = radius_list[i];
@@ -400,7 +407,7 @@ void drawRain(int startFreq) {
             }
         }
         if (frameCount % freq == startFreq + 20) {
-            for(int i=0; i<4; i++){ 
+            for(int i=0; i<rain_num; i++){
                 ps.origin.x = ps_origin_list[i][0];
                 ps.origin.y = ps_origin_list[i][1];
                 max_radius = radius_list[i];
