@@ -3,7 +3,7 @@ import java.util.*;
 import ch.bildspur.realsense.*;
 import ch.bildspur.realsense.type.*;
 import processing.video.*;
-Movie paymentMovie;
+OpenSimplexNoise noise;
 
 RealSenseCamera camera = new RealSenseCamera(this);
 
@@ -25,13 +25,14 @@ static final int ONBOARDING = 1;
 static final int DRIVESTART = 2;
 static final int DRIVESTOP = 3;
 static final int RAIN = 4;
+static final int HEATWAVE = 5;
 
 int numMovies = 3;
 Movie[] playlist = new Movie[numMovies]; 
 int currentMovieIndex  = 0;
-static final int PAYMENT = 5;
-static final int INFOLINE = 6;
-static final int INFOLINEDELAY = 7;
+static final int PAYMENT = 6;
+static final int INFOLINE = 7;
+static final int INFOLINEDELAY = 8;
 
 
 int drawMode = RIPPLE;
@@ -83,11 +84,13 @@ ArrayList<Integer> max_grid_list = new ArrayList();
 
 // SCENE SETUP
 void setup() {
-    // size(2544, 1440);
     // size(3816, 2160);
     // size(4240, 2400);
     fullScreen();
     surface.setSize(4240,2400);
+    // surface.setSize(2544, 1440);
+    // surface.setSize(1000, 1000, P2D);
+    // size(1000, 1000, P2D);
     camera.start();
     
     //enable depth stream
@@ -113,12 +116,16 @@ void setup() {
     playlist[1] = new Movie(this,"info-line.mov");
     playlist[2] = new Movie(this,"info-line-super-delay.mov");
     playlist[currentMovieIndex].loop();
+
+    // noise = new OpenSimplexNoise(12345); 
+    noise = new OpenSimplexNoise(20000); 
 }
 
 
 // DRAW SCENE EVERY FRAME
 void draw() {
     background(0);
+    println(frameRate);
     
     // read frames
     camera.readFrames();
@@ -293,6 +300,30 @@ void draw() {
                 }
             }
             break;
+        
+        case(HEATWAVE):
+            int numFrames = 10;
+            float t = 1.0*frameCount/numFrames;
+            // int m = 450;
+            int width_m = 450;
+            int height_m = 450;
+            stroke(255,50);
+            strokeWeight(3);
+            for(int i=0;i<width_m;i++)
+            {
+                for(int j=0;j<height_m;j++)
+                {
+                float margin = 50;
+                float x = map(i,0,width_m-1,margin,width-margin);
+                float y = map(j,0,height_m-1,margin,height-margin);
+
+                float dx = 20.0*periodicFunction(t-offset(x,y),0,x,y);
+                float dy = 20.0*periodicFunction(t-offset(x,y),123,x,y);
+
+                point(x+dx,y+dy);
+                }
+            }
+            break;
 
         case(PAYMENT):
             ps.run();
@@ -343,6 +374,7 @@ void keyPressed() {
         case('p') : drawMode = DRIVESTOP; break;
         // TOOO:
         case('r') : drawMode = RAIN; break;
+        case('h') : drawMode = HEATWAVE; break;
         // movies
         case('0') : drawMode = PAYMENT; break;
         case('1') : drawMode = INFOLINE; break;
@@ -383,6 +415,7 @@ int getGridIndex(PVector vector_origin) {
         for (int y = 0; y < height; y +=step) {
             //  TODO: change accroding to canvas size
             float d = camera.getDistance(x / 5, y / 5);
+            // float d = camera.getDistance(x / 3, y / 3);
             if (d > 0.5 && d <= 0.8) {
                 if (x >= 0 && x < width / 3) {
                     zone_0_count += 1;
@@ -463,6 +496,20 @@ PVector getGridPosition(int max_index) {
     }
     
     return vector_origin;
+}
+
+float periodicFunction(float p,float seed,float x,float y)
+{
+  float radius = 1.3;
+  float scl = 0.018;
+//   float scl = 1;
+  return 1.0*(float)noise.eval(seed+radius*cos(TWO_PI*p),radius*sin(TWO_PI*p),scl*x,scl*y);
+}
+
+
+float offset(float x,float y)
+{
+  return 0.015*dist(x,y,width/2,height/2);
 }
 
 void drawSliders() {
