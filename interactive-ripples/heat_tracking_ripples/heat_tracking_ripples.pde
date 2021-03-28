@@ -83,7 +83,9 @@ ArrayList<Integer> max_grid_list = new ArrayList();
 
 // SCENE SETUP
 void setup() {
-    size(2544, 1440);
+    // size(2544, 1440);
+    size(3816, 2160);
+    size()
     camera.start();
     
     //enable depth stream
@@ -374,10 +376,11 @@ int getGridIndex(PVector vector_origin) {
     int zone_5_count = 0;
     
     // Step has direct impact to performance. Change according to canvas size.
-    int step = 40;
+    int step = 60;
     for (int x = 0; x < width; x +=step) {
         for (int y = 0; y < height; y +=step) {
-            float d = camera.getDistance(x / 3, y / 3);
+            //  TODO: change accroding to canvas size
+            float d = camera.getDistance(x / 4.5, y / 4.5);
             if (d > 0.5 && d <= 0.8) {
                 if (x >= 0 && x < width / 3) {
                     zone_0_count += 1;
