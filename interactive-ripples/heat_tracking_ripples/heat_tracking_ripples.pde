@@ -40,7 +40,7 @@ static final int INFOLINE = 7;
 static final int INFOLINEDELAY = 8;
 
 
-int drawMode = RIPPLE;
+int drawMode = ONBOARDING;
 
 // check supported config here
 // https://github.com/cansik/realsense-processing
@@ -58,7 +58,7 @@ int control_points = 31;
 int max_radius = 55;
 int min_radius = 50;
 
-float circle_size = 0.5;
+float circle_size = 0.5f;
 
 //how fast will the ripple grow/expand 
 float growth = 1.8;
@@ -85,6 +85,7 @@ int freq = 30;
 int scale_size = 100;
 
 int radiusRate = 3;
+
 // ###  End of Deafault Sliders Values ####
 
 ArrayList<Integer> max_grid_list = new ArrayList();
@@ -151,21 +152,22 @@ void draw() {
         
         case(ONBOARDING):
             ss.run();
-            freq = 60;
+            freq = 30;
             circle_size = 1.0f;
+            int first_circle_size = 50;
             if (frameCount % freq == 0) {
                 currentGridIndex = getGridIndex(ss_origin);
                 ss.origin = getGridPosition(currentGridIndex).copy();
-                addShakes(ss, 40, 45);
+                addShakes(ss, first_circle_size, first_circle_size);
+            }
+            if (frameCount % freq == 10) {
+                addShakes(ss, first_circle_size*2, first_circle_size*2);
+            }
+            if (frameCount % freq == 15) {
+                addShakes(ss, first_circle_size*2, first_circle_size*2);
             }
             if (frameCount % freq == 20) {
-                addShakes(ss, 60, 65);
-            }
-            if (frameCount % freq == 25) {
-                addShakes(ss, 60, 65);
-            }
-            if (frameCount % freq == 30) {
-                addShakes(ss, 60, 65);
+                addShakes(ss, first_circle_size*2, first_circle_size*2);
             }
             break;
 
@@ -294,10 +296,8 @@ void keyPressed() {
     switch(key) {
         case('e') : drawMode = RIPPLE; break;
         case('o') : drawMode = ONBOARDING; break;
-        // TODO:
         case('s') : drawMode = DRIVESTART; break;
         case('p') : drawMode = DRIVESTOP; break;
-        // TOOO:
         case('r') : drawMode = RAIN; break;
         case('h') : drawMode = HEATWAVE; break;
         // movies

@@ -62,7 +62,7 @@ static final int INFOLINE = 7;
 static final int INFOLINEDELAY = 8;
 
 
-int drawMode = RIPPLE;
+int drawMode = ONBOARDING;
 
 // check supported config here
 // https://github.com/cansik/realsense-processing
@@ -107,6 +107,7 @@ int freq = 30;
 int scale_size = 100;
 
 int radiusRate = 3;
+
 // ###  End of Deafault Sliders Values ####
 
 ArrayList<Integer> max_grid_list = new ArrayList();
@@ -173,21 +174,22 @@ public void draw() {
         
         case(ONBOARDING):
             ss.run();
-            freq = 60;
+            freq = 30;
             circle_size = 1.0f;
+            int first_circle_size = 50;
             if (frameCount % freq == 0) {
                 currentGridIndex = getGridIndex(ss_origin);
                 ss.origin = getGridPosition(currentGridIndex).copy();
-                addShakes(ss, 40, 45);
+                addShakes(ss, first_circle_size, first_circle_size);
+            }
+            if (frameCount % freq == 10) {
+                addShakes(ss, first_circle_size*2, first_circle_size*2);
+            }
+            if (frameCount % freq == 15) {
+                addShakes(ss, first_circle_size*2, first_circle_size*2);
             }
             if (frameCount % freq == 20) {
-                addShakes(ss, 60, 65);
-            }
-            if (frameCount % freq == 25) {
-                addShakes(ss, 60, 65);
-            }
-            if (frameCount % freq == 30) {
-                addShakes(ss, 60, 65);
+                addShakes(ss, first_circle_size*2, first_circle_size*2);
             }
             break;
 
@@ -316,10 +318,8 @@ public void keyPressed() {
     switch(key) {
         case('e') : drawMode = RIPPLE; break;
         case('o') : drawMode = ONBOARDING; break;
-        // TODO:
         case('s') : drawMode = DRIVESTART; break;
         case('p') : drawMode = DRIVESTOP; break;
-        // TOOO:
         case('r') : drawMode = RAIN; break;
         case('h') : drawMode = HEATWAVE; break;
         // movies
@@ -3007,7 +3007,7 @@ class Shake {
     // Calculate the center of the ripple
     // And the angle between the shape points
     location = l.copy();
-    angle = TWO_PI/(float)numOfPoints;
+    angle = TWO_PI*circSize /(float)numOfPoints;
 
     // Fill the array of points which defines the ripple shape
     // Each array element is a random point-raduis, within the range: minRad <> maxRad
@@ -3056,7 +3056,7 @@ class Shake {
       curveVertex(location.x + pointsRadius[i]*cos(angle*i)*radiusRate, location.y - pointsRadius[i]*sin(angle*i)*radiusRate);
     }
     curveVertex(location.x + pointsRadius[0]*cos(0)*radiusRate, location.y - pointsRadius[0]*sin(0)*radiusRate); 
-    // curveVertex(location.x + pointsRadius[1]*cos(angle), location.y - pointsRadius[1]*sin(angle)); 
+    curveVertex(location.x + pointsRadius[1]*cos(angle)*radiusRate, location.y - pointsRadius[1]*sin(angle)*radiusRate); 
     endShape();
   }
 

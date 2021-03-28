@@ -93,7 +93,7 @@ class Shake {
     // Calculate the center of the ripple
     // And the angle between the shape points
     location = l.copy();
-    angle = TWO_PI/(float)numOfPoints;
+    angle = TWO_PI*circSize /(float)numOfPoints;
 
     // Fill the array of points which defines the ripple shape
     // Each array element is a random point-raduis, within the range: minRad <> maxRad
@@ -142,7 +142,7 @@ class Shake {
       curveVertex(location.x + pointsRadius[i]*cos(angle*i)*radiusRate, location.y - pointsRadius[i]*sin(angle*i)*radiusRate);
     }
     curveVertex(location.x + pointsRadius[0]*cos(0)*radiusRate, location.y - pointsRadius[0]*sin(0)*radiusRate); 
-    // curveVertex(location.x + pointsRadius[1]*cos(angle), location.y - pointsRadius[1]*sin(angle)); 
+    curveVertex(location.x + pointsRadius[1]*cos(angle)*radiusRate, location.y - pointsRadius[1]*sin(angle)*radiusRate); 
     endShape();
   }
 
