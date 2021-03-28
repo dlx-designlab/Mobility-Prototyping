@@ -157,11 +157,19 @@ void draw() {
             if (frameCount % freq == 3) {
                 currentGridIndex = getGridIndex(ss_origin);
                 ss.origin = getGridPosition(currentGridIndex).copy();
-                addShakes(ss, 60, 65);
-                addShakes(ss, 50, 55);
-                addShakes(ss, 40, 45);
-                addShakes(ss, 30, 35);
                 addShakes(ss, 20, 25);
+            }
+            if (frameCount % freq == 6) {
+                addShakes(ss, 30, 35);
+            }
+            if (frameCount % freq == 9) {
+                addShakes(ss, 40, 45);
+            }
+            if (frameCount % freq == 12) {
+                addShakes(ss, 50, 55);
+            }
+            if (frameCount % freq == 15) {
+                addShakes(ss, 60, 65);
             }
             break;
 
