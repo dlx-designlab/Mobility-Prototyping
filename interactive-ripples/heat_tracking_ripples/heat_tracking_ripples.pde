@@ -362,7 +362,6 @@ void addShakes(ShakeSystem ss, int min_radius, int max_radius) {
         shape_strtoke, stroke_color, fill_color, radiusRate);
 }
 
-
 // logic for determining the grid position from the depth sensor input
 int getGridIndex(PVector vector_origin) {
     max_grid_list.clear();
