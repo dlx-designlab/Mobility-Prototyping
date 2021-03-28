@@ -84,15 +84,17 @@ ArrayList<Integer> max_grid_list = new ArrayList();
 // SCENE SETUP
 void setup() {
     // size(2544, 1440);
-    size(3816, 2160);
-    size()
+    // size(3816, 2160);
+    size(4240, 2400);
     camera.start();
     
     //enable depth stream
     camera.enableDepthStream(camWidth, camHeight);
     camera.addThresholdFilter(0.5,1.2);
     
-    // noCursor();
+    noCursor();
+    frame.removeNotify();
+    frame.setUndecorated(true);
     
     //control panel
     cp5 = new ControlP5(this);
@@ -380,7 +382,7 @@ int getGridIndex(PVector vector_origin) {
     for (int x = 0; x < width; x +=step) {
         for (int y = 0; y < height; y +=step) {
             //  TODO: change accroding to canvas size
-            float d = camera.getDistance(x / 4.5, y / 4.5);
+            float d = camera.getDistance(x / 5, y / 5);
             if (d > 0.5 && d <= 0.8) {
                 if (x >= 0 && x < width / 3) {
                     zone_0_count += 1;
