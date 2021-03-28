@@ -31,5 +31,5 @@
 *.out
 *.app
 
-# interactive-ripples/heat_tracking_ripples/data
+interactive-ripples/heat_tracking_ripples/data
 # interactive-ripples/heat_tracking_ripples/out
