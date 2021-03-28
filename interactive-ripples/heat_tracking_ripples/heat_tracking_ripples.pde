@@ -47,8 +47,8 @@ int drawMode = ONBOARDING;
 int camWidth = 848;
 int camHeight = 480;
 
-int movieWidth = 848;
-int movieHeight = 477;
+int movieWidth = 1440;
+int movieHeight = 765;
 
 // ###  Default Sliders Values ####
 // How many points define the ripple shape
@@ -176,23 +176,24 @@ void draw() {
             freq = 60;
             growth = 0.0;
             circle_size = 0.5f;
+            int drive_start_circle_radius = 60;
             // TODO: fade param needed
             if (frameCount % freq == 3) {
                 currentGridIndex = getGridIndex(ss_origin);
                 ss.origin = getGridPosition(currentGridIndex).copy();
-                addShakes(ss, 40, 45);
+                addShakes(ss, drive_start_circle_radius, drive_start_circle_radius+5);
             }
             if (frameCount % freq == 6) {
-                addShakes(ss, 50, 55);
+                addShakes(ss, drive_start_circle_radius+10, drive_start_circle_radius+15);
             }
             if (frameCount % freq == 9) {
-                addShakes(ss, 60, 65);
+                addShakes(ss, drive_start_circle_radius+20, drive_start_circle_radius+25);
             }
             if (frameCount % freq == 12) {
-                addShakes(ss, 70, 75);
+                addShakes(ss, drive_start_circle_radius+30, drive_start_circle_radius+35);
             }
             if (frameCount % freq == 15) {
-                addShakes(ss, 80, 85);
+                addShakes(ss, drive_start_circle_radius+40, drive_start_circle_radius+45);
             }
             break;
 
@@ -201,22 +202,24 @@ void draw() {
             freq = 60;
             growth = 0.0;
             circle_size = 1.0f;
+            int drive_stop_circle_radius = 105;
             if (frameCount % freq == 3) {
                 currentGridIndex = getGridIndex(ss_origin);
                 ss.origin = getGridPosition(currentGridIndex).copy();
-                addShakes(ss, 80, 85);
+                addShakes(ss, drive_stop_circle_radius, drive_stop_circle_radius+5);
             }
             if (frameCount % freq == 6) {
-                addShakes(ss, 70, 75);
+                addShakes(ss, drive_stop_circle_radius-10, drive_stop_circle_radius-5);
+                drive_stop_circle_radius -= 10;
             }
             if (frameCount % freq == 9) {
-                addShakes(ss, 60, 65);
+                addShakes(ss, drive_stop_circle_radius-20, drive_stop_circle_radius-15);
             }
             if (frameCount % freq == 12) {
-                addShakes(ss, 50, 55);
+                addShakes(ss, drive_stop_circle_radius-30, drive_stop_circle_radius-25);
             }
             if (frameCount % freq == 15) {
-                addShakes(ss, 40, 45);
+                addShakes(ss, drive_stop_circle_radius-40, drive_stop_circle_radius-35);
             }
             break;
 
