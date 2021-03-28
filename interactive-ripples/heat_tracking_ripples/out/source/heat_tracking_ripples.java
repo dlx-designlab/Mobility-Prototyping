@@ -32,12 +32,12 @@ RealSenseCamera camera = new RealSenseCamera(this);
 
 ControlP5 cp5;
 ParticleSystem ps;
-ShakeSystem ss;
+ShakeSystem ss; 
 
 PVector ps_origin;
 PVector ss_origin;
 PVector movie_origin;
-// float [][] ps_origin_list = new float[4][2];
+float [][] ps_origin_list = new float[20][2];
 int [] radius_list = new int[20];
 
 int currentGridIndex = 99;
@@ -75,8 +75,6 @@ int control_points = 31;
 int max_radius = 55;
 int min_radius = 50;
 
-float circle_size = 0.5f;
-
 //how fast will the ripple grow/expand 
 float growth = 1.8f;
 
@@ -87,7 +85,7 @@ int life_span = 255;
 float fade_speed = 10;
 
 // The width of the ripple shape stroke (if used)
-int ripple_width = 7;
+int ripple_width = 7;    
 
 //  Fill and stroke visibility
 boolean shape_fill = false;
@@ -110,10 +108,11 @@ ArrayList<Integer> max_grid_list = new ArrayList();
 public void setup() {
     // size(3816, 2160);
     // size(4240, 2400);
-    
+    // fullScreen();
     // surface.setSize(4240,2400);
-    surface.setSize(2544, 1440);
-    // surface.setSize(1000, 1000);
+    // surface.setSize(2544, 1440);
+    // surface.setSize(1000, 1000, P2D);
+    
     camera.start();
     
     //enable depth stream
@@ -165,22 +164,21 @@ public void draw() {
             break;
         
         case(ONBOARDING):
-            ss.run();
+            ps.run();
             freq = 60;
-            circle_size = 1.0f;
             if (frameCount % freq == 0) {
-                currentGridIndex = getGridIndex(ss_origin);
-                ss.origin = getGridPosition(currentGridIndex).copy();
-                addShakes(ss, 40, 45);
+                currentGridIndex = getGridIndex(ps_origin);
+                ps.origin = getGridPosition(currentGridIndex).copy();
+                addParticles(ps);
             }
             if (frameCount % freq == 20) {
-                addShakes(ss, 60, 65);
+                addParticles(ps);
             }
             if (frameCount % freq == 25) {
-                addShakes(ss, 60, 65);
+                addParticles(ps);
             }
             if (frameCount % freq == 30) {
-                addShakes(ss, 60, 65);
+                addParticles(ps);
             }
             break;
 
@@ -188,24 +186,23 @@ public void draw() {
             ss.run();
             freq = 60;
             growth = 0.0f;
-            circle_size = 0.5f;
             // TODO: fade param needed
             if (frameCount % freq == 3) {
                 currentGridIndex = getGridIndex(ss_origin);
                 ss.origin = getGridPosition(currentGridIndex).copy();
-                addShakes(ss, 40, 45);
+                addShakes(ss, 20, 25);
             }
             if (frameCount % freq == 6) {
-                addShakes(ss, 50, 55);
+                addShakes(ss, 30, 35);
             }
             if (frameCount % freq == 9) {
-                addShakes(ss, 60, 65);
+                addShakes(ss, 40, 45);
             }
             if (frameCount % freq == 12) {
-                addShakes(ss, 70, 75);
+                addShakes(ss, 50, 55);
             }
             if (frameCount % freq == 15) {
-                addShakes(ss, 80, 85);
+                addShakes(ss, 60, 65);
             }
             break;
 
@@ -213,34 +210,119 @@ public void draw() {
             ss.run();
             freq = 60;
             growth = 0.0f;
-            circle_size = 1.0f;
             if (frameCount % freq == 3) {
                 currentGridIndex = getGridIndex(ss_origin);
                 ss.origin = getGridPosition(currentGridIndex).copy();
-                addShakes(ss, 80, 85);
-            }
-            if (frameCount % freq == 6) {
-                addShakes(ss, 70, 75);
-            }
-            if (frameCount % freq == 9) {
                 addShakes(ss, 60, 65);
             }
-            if (frameCount % freq == 12) {
+            if (frameCount % freq == 6) {
                 addShakes(ss, 50, 55);
             }
-            if (frameCount % freq == 15) {
+            if (frameCount % freq == 9) {
                 addShakes(ss, 40, 45);
+            }
+            if (frameCount % freq == 12) {
+                addShakes(ss, 30, 35);
+            }
+            if (frameCount % freq == 15) {
+                addShakes(ss, 20, 25);
             }
             break;
 
         case(RAIN):
-            drawRain(0);
-            // drawRain(2);
-            drawRain(4);
-            // drawRain(6);
-            drawRain(8);
+            ps.run();
+            currentGridIndex = getGridIndex(ps_origin);
+            freq = 60;
+            growth = 6;
+            life_span = 300;
+            if (frameCount % freq == 0) {
+                for(int i=0; i<20; i++){
+                    int x = (int)random(width);
+                    ps.origin.x = x;
+                    switch (currentGridIndex) {
+                        case 0:
+                            if (x > width*2/3) {
+                                int y = (int)random(height/2, height);
+                                ps.origin.y = y;
+                            } else {
+                                int y = (int)random(height);
+                                ps.origin.y = y;
+                            }
+                            break;
+                        case 1:
+                            if (x < width*2/3 && x > width/3) {
+                                int y = (int)random(height/2, height);
+                                ps.origin.y = y;
+                            } else {
+                                int y = (int)random(height);
+                                ps.origin.y = y;
+                            }
+                            break;
+                        case 2:
+                            if (x < width/3) {
+                                int y = (int)random(height/2, height);
+                                ps.origin.y = y;
+                            } else {
+                                int y = (int)random(height);
+                                ps.origin.y = y;
+                            }
+                            break;
+                        case 3:
+                            if (x > width*2/3) {
+                                int y = (int)random(0, height/2);
+                                ps.origin.y = y;
+                            } else {
+                                int y = (int)random(height);
+                                ps.origin.y = y;
+                            }
+                            break;
+                        case 4:
+                            if (x < width*2/3 && x > width/3) {
+                                int y = (int)random(0, height/2);
+                                ps.origin.y = y;
+                            } else {
+                                int y = (int)random(height);
+                                ps.origin.y = y;
+                            }
+                            break;
+                        case 5:
+                            if (x < width/3) {
+                                int y = (int)random(0, height/2);
+                                ps.origin.y = y;
+                            } else {
+                                int y = (int)random(height);
+                                ps.origin.y = y;
+                            }
+                            break;
+                    }
+                    max_radius = (int)random(100);
+                    min_radius = max_radius;
+                    ps_origin_list[i][0] = ps.origin.x;
+                    ps_origin_list[i][1] = ps.origin.y;
+                    radius_list[i] = max_radius;
+                    addParticles(ps);
+                }
+            }
+            if (frameCount % freq == 15) {
+                for(int i=0; i<20; i++){ 
+                    ps.origin.x = ps_origin_list[i][0];
+                    ps.origin.y = ps_origin_list[i][1];
+                    max_radius = radius_list[i];
+                    min_radius = max_radius;
+                    addParticles(ps);
+                }
+            }
+            if (frameCount % freq == 20) {
+                for(int i=0; i<20; i++){ 
+                    ps.origin.x = ps_origin_list[i][0];
+                    ps.origin.y = ps_origin_list[i][1];
+                    max_radius = radius_list[i];
+                    min_radius = max_radius;
+                    addParticles(ps);
+                }
+            }
             break;
-
+        
         case(HEATWAVE):
             int numFrames = 10;
             float t = 1.0f*frameCount/numFrames;
@@ -335,103 +417,7 @@ public void addShakes(ShakeSystem ss, int min_radius, int max_radius) {
     fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB(); 
     ss.addShake(control_points, max_radius, min_radius, growth, 
         life_span, fade_speed, ripple_width, shape_fill, 
-        shape_strtoke, stroke_color, fill_color, radiusRate, circle_size);
-}
-
-public void drawRain(int startFreq) {
-        ps.run();
-        currentGridIndex = getGridIndex(ps_origin);
-        freq = 60;
-        growth = 6;
-        life_span = 300;
-        float [][] ps_origin_list = new float[4][2];
-        if (frameCount % freq == startFreq) {
-            for(int i=0; i<4; i++){
-                int x = (int)random(width);
-                ps.origin.x = x;
-                switch (currentGridIndex) {
-                    case 0:
-                        if (x > width*2/3) {
-                            int y = (int)random(height/2, height);
-                            ps.origin.y = y;
-                        } else {
-                            int y = (int)random(height);
-                            ps.origin.y = y;
-                        }
-                        break;
-                    case 1:
-                        if (x < width*2/3 && x > width/3) {
-                            int y = (int)random(height/2, height);
-                            ps.origin.y = y;
-                        } else {
-                            int y = (int)random(height);
-                            ps.origin.y = y;
-                        }
-                        break;
-                    case 2:
-                        if (x < width/3) {
-                            int y = (int)random(height/2, height);
-                            ps.origin.y = y;
-                        } else {
-                            int y = (int)random(height);
-                            ps.origin.y = y;
-                        }
-                        break;
-                    case 3:
-                        if (x > width*2/3) {
-                            int y = (int)random(0, height/2);
-                            ps.origin.y = y;
-                        } else {
-                            int y = (int)random(height);
-                            ps.origin.y = y;
-                        }
-                        break;
-                    case 4:
-                        if (x < width*2/3 && x > width/3) {
-                            int y = (int)random(0, height/2);
-                            ps.origin.y = y;
-                        } else {
-                            int y = (int)random(height);
-                            ps.origin.y = y;
-                        }
-                        break;
-                    case 5:
-                        if (x < width/3) {
-                            int y = (int)random(0, height/2);
-                            ps.origin.y = y;
-                        } else {
-                            int y = (int)random(height);
-                            ps.origin.y = y;
-                        }
-                        break;
-                }
-                max_radius = (int)random(100);
-                min_radius = max_radius;
-                ps_origin_list[i][0] = ps.origin.x;
-                ps_origin_list[i][1] = ps.origin.y;
-                radius_list[i] = max_radius;
-                addParticles(ps);
-            }
-        }
-        if (frameCount % freq == startFreq + 15) {
-            for(int i=0; i<4; i++){ 
-                ps.origin.x = ps_origin_list[i][0];
-                ps.origin.y = ps_origin_list[i][1];
-                max_radius = radius_list[i];
-                min_radius = max_radius;
-                addParticles(ps);
-            }
-        }
-        if (frameCount % freq == startFreq + 20) {
-            for(int i=0; i<4; i++){ 
-                ps.origin.x = ps_origin_list[i][0];
-                ps.origin.y = ps_origin_list[i][1];
-                max_radius = radius_list[i];
-                min_radius = max_radius;
-                addParticles(ps);
-            }
-        }
-
+        shape_strtoke, stroke_color, fill_color, radiusRate);
 }
 
 // logic for determining the grid position from the depth sensor input
@@ -2919,9 +2905,9 @@ class ShakeSystem {
  
   public void addShake(int ctlPts, int maxRad, int minRad, float growRate, 
                     int lifeSpan, float fadeSpeed, int rippleWidth, 
-                    boolean shapeFill, boolean shapeStrtoke, int strokeColor, int fillColor, int radiusRate, float circleSize) {
+                    boolean shapeFill, boolean shapeStrtoke, int strokeColor, int fillColor, int radiusRate) {
     shakes.add(new Shake(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed,
-                                rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor, radiusRate, circleSize));
+                                rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor, radiusRate));
   }
 
   // Update all the arcs in the system
@@ -2959,12 +2945,11 @@ class Shake {
   int fillCol;
   int strokeCol;
   int radiusRate;
-  float circSize;
  
   // Coinstructor
   Shake(PVector l, int ctlPts, int maxR, int minR, float growRate, 
                     int lifeSpan, float fadeSpd, int rippleW, 
-                    boolean shpFill, boolean shpStrtoke, int strkColor, int fillColor, int radiusR, float circleSize) {
+                    boolean shpFill, boolean shpStrtoke, int strkColor, int fillColor, int radiusR) {
     
     // How many points define the ripple shape
     numOfPoints = ctlPts;    
@@ -2972,8 +2957,6 @@ class Shake {
     // How wiggly the shape will be
     maxRad = maxR;
     minRad = minR;
-
-    circSize = circleSize;
     
     //how fast will the ripple grow/expand 
     growth = growRate;
@@ -2998,12 +2981,10 @@ class Shake {
 
     radiusRate = radiusR;
 
-    
-
     // Calculate the center of the ripple
     // And the angle between the shape points
     location = l.copy();
-    angle = TWO_PI*circSize/(float)numOfPoints;
+    angle = TWO_PI/(float)numOfPoints;
 
     // Fill the array of points which defines the ripple shape
     // Each array element is a random point-raduis, within the range: minRad <> maxRad
@@ -3065,7 +3046,7 @@ class Shake {
     }
   }
 }
-  public void settings() {  fullScreen(); }
+  public void settings() {  size(1000, 1000, P2D); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "heat_tracking_ripples" };
     if (passedArgs != null) {
