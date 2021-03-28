@@ -1,8 +1,30 @@
-import controlP5.*;
-import java.util.*;
-import ch.bildspur.realsense.*;
-import ch.bildspur.realsense.type.*;
-import processing.video.*;
+import processing.core.*; 
+import processing.data.*; 
+import processing.event.*; 
+import processing.opengl.*; 
+
+import controlP5.*; 
+import java.util.*; 
+import ch.bildspur.realsense.*; 
+import ch.bildspur.realsense.type.*; 
+import processing.video.*; 
+
+import java.util.HashMap; 
+import java.util.ArrayList; 
+import java.io.File; 
+import java.io.BufferedReader; 
+import java.io.PrintWriter; 
+import java.io.InputStream; 
+import java.io.OutputStream; 
+import java.io.IOException; 
+
+public class heat_tracking_ripples extends PApplet {
+
+
+
+
+
+
 Movie paymentMovie;
 
 RealSenseCamera camera = new RealSenseCamera(this);
@@ -53,7 +75,7 @@ int max_radius = 55;
 int min_radius = 50;
 
 //how fast will the ripple grow/expand 
-float growth = 1.8;
+float growth = 1.8f;
 
 // Lifespan Max value is 255 if the particle to be fully opaque when it first appears
 int life_span = 255; 
@@ -68,8 +90,8 @@ int ripple_width = 7;
 boolean shape_fill = false;
 boolean shape_strtoke = true;
 
-color stroke_color = color(255, 255, 255);
-color fill_color = color(200, 200, 200);
+int stroke_color = color(255, 255, 255);
+int fill_color = color(200, 200, 200);
 
 // how often to create a new particle (Higher value is slower)
 int freq = 30;
@@ -82,17 +104,17 @@ int radiusRate = 3;
 ArrayList<Integer> max_grid_list = new ArrayList();
 
 // SCENE SETUP
-void setup() {
+public void setup() {
     // size(2544, 1440);
     // size(3816, 2160);
     // size(4240, 2400);
-    fullScreen();
+    
     surface.setSize(4240,2400);
     camera.start();
     
     //enable depth stream
     camera.enableDepthStream(camWidth, camHeight);
-    camera.addThresholdFilter(0.5,1.2);
+    camera.addThresholdFilter(0.5f,1.2f);
     
     noCursor();
     
@@ -117,7 +139,7 @@ void setup() {
 
 
 // DRAW SCENE EVERY FRAME
-void draw() {
+public void draw() {
     background(0);
     
     // read frames
@@ -156,7 +178,7 @@ void draw() {
         case(DRIVESTART):
             ss.run();
             freq = 60;
-            growth = 0.0;
+            growth = 0.0f;
             // TODO: fade param needed
             if (frameCount % freq == 3) {
                 currentGridIndex = getGridIndex(ss_origin);
@@ -180,7 +202,7 @@ void draw() {
         case(DRIVESTOP):
             ss.run();
             freq = 60;
-            growth = 0.0;
+            growth = 0.0f;
             if (frameCount % freq == 3) {
                 currentGridIndex = getGridIndex(ss_origin);
                 ss.origin = getGridPosition(currentGridIndex).copy();
@@ -330,11 +352,11 @@ void draw() {
     }
 }
 
-void movieEvent(Movie m) {
+public void movieEvent(Movie m) {
     m.read();
 }
 
-void keyPressed() {
+public void keyPressed() {
     switch(key) {
         case('e') : drawMode = RIPPLE; break;
         case('o') : drawMode = ONBOARDING; break;
@@ -350,7 +372,7 @@ void keyPressed() {
     }
 }
 
-void addParticles(ParticleSystem ps) {
+public void addParticles(ParticleSystem ps) {
     stroke_color = cp5.get(ColorWheel.class,"strokeCol").getRGB();
     fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB();    
     ps.addParticle(control_points, max_radius, min_radius, growth, 
@@ -358,7 +380,7 @@ void addParticles(ParticleSystem ps) {
         shape_strtoke, stroke_color, fill_color);
 }
 
-void addShakes(ShakeSystem ss, int min_radius, int max_radius) {
+public void addShakes(ShakeSystem ss, int min_radius, int max_radius) {
     stroke_color = cp5.get(ColorWheel.class,"strokeCol").getRGB();
     fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB(); 
     ss.addShake(control_points, max_radius, min_radius, growth, 
@@ -367,7 +389,7 @@ void addShakes(ShakeSystem ss, int min_radius, int max_radius) {
 }
 
 // logic for determining the grid position from the depth sensor input
-int getGridIndex(PVector vector_origin) {
+public int getGridIndex(PVector vector_origin) {
     max_grid_list.clear();
     
     int zone_0_count = 0;
@@ -383,7 +405,7 @@ int getGridIndex(PVector vector_origin) {
         for (int y = 0; y < height; y +=step) {
             //  TODO: change accroding to canvas size
             float d = camera.getDistance(x / 5, y / 5);
-            if (d > 0.5 && d <= 0.8) {
+            if (d > 0.5f && d <= 0.8f) {
                 if (x >= 0 && x < width / 3) {
                     zone_0_count += 1;
                 }
@@ -394,7 +416,7 @@ int getGridIndex(PVector vector_origin) {
                     zone_2_count += 1;
                 }
             }
-            if (d > 0.8 && d <= 1.2) {
+            if (d > 0.8f && d <= 1.2f) {
                 if (x >= 0 && x < width / 3) {
                     zone_3_count += 1;
                 }
@@ -426,7 +448,7 @@ int getGridIndex(PVector vector_origin) {
     return max_index;
 }
 
-PVector getGridPosition(int max_index) {
+public PVector getGridPosition(int max_index) {
     PVector vector_origin = new PVector(width*10, height*10); 
     
     //update particle system position
@@ -465,7 +487,7 @@ PVector getGridPosition(int max_index) {
     return vector_origin;
 }
 
-void drawSliders() {
+public void drawSliders() {
     
     cp5.addSlider("control_points")
        .setPosition(10,10)
@@ -536,4 +558,317 @@ void drawSliders() {
        .setRGB(fill_color)
        .setCaptionLabel("fill_color")
        ;
+}
+// THE PARTICLE SYSYEM CALSS
+class ParticleSystem {
+    ArrayList particles;
+    PVector origin;
+    
+    //Constructor
+    ParticleSystem(PVector location) {
+        origin = location.copy();
+        particles = new ArrayList();
+    }
+    
+    public void addParticle(int ctlPts, int maxRad, int minRad, float growRate, 
+        int lifeSpan, float fadeSpeed, int rippleWidth, 
+        boolean shapeFill, boolean shapeStrtoke, int strokeColor, int fillColor) {
+        particles.add(new Particle(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed, 
+            rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor));
+    }
+    
+    //Update all the particles in the system
+    public void run() {
+        Iterator<Particle> it = particles.iterator();
+        while(it.hasNext()) {
+            Particle p = it.next();
+            p.run();
+            if (p.isDead()) {
+                it.remove();
+            }
+        }
+    }
+}
+
+
+// INDIVIDUAL PARTICLE CLASS
+class Particle {
+    
+    PVector location; 
+    float growth;
+    float lifespan;
+    float fadeSpeed;
+    int rippleWidth;
+    float[] pointsRadius;
+    float angle;
+    int numOfPoints;
+    int minRad;
+    int maxRad;
+    boolean shapeFill;
+    boolean shapeStrtoke;
+    int fillCol;
+    int strokeCol;
+    
+    //Coinstructor
+    Particle(PVector l, int ctlPts, int maxR, int minR, float growRate, 
+        int lifeSpan, float fadeSpd, int rippleW, 
+        boolean shpFill, boolean shpStrtoke, int strkColor, int fillColor) {
+        
+        // How many points define the ripple shape
+        numOfPoints = ctlPts;    
+        
+        // How wiggly the shape will be
+        maxRad = maxR;
+        minRad = minR;
+        
+        //how fast will the ripple grow/expand 
+        growth = growRate;
+        
+        // Lifespan Max value is 255
+        // If the particle to be fully opaque when it first appears
+        lifespan = lifeSpan; 
+        
+        // how fast the particles fade
+        fadeSpeed = fadeSpd;
+        
+        // The width of the ripple shape stroke (if used)
+        rippleWidth = rippleW;    
+        
+        // The color of the fill / stroke (feel free to add more colors)
+        strokeCol = strkColor;
+        fillCol = fillColor;
+        
+        //  Fill and stroke visibility
+        shapeFill = shpFill;
+        shapeStrtoke = shpStrtoke;
+        
+        // Calculate the center of the ripple
+        // And the angle between the shape points
+        location = l.copy();
+        angle = TWO_PI / (float)numOfPoints;
+        
+        // Fill the array of points which defines the ripple shape
+        // Each array element is a random point-raduis, within the range: minRad <> maxRad
+        pointsRadius = new float[numOfPoints];
+        for (int i = 0;i < numOfPoints;i++) {
+            pointsRadius[i] = random(minRad, maxRad);
+        }
+    }
+    
+    public void run() {
+        update();
+        display();
+    }
+    
+    //Update Particle shape / position / size
+    public void update() {
+        // velocity.add(acceleration);
+        // location.add(velocity);
+        for (int i = 0;i < numOfPoints;i++)
+        {
+            pointsRadius[i] += growth;
+        }
+        lifespan -= fadeSpeed;
+    }
+    
+    //Draw the particle
+    public void display() {
+        
+        // Particle style
+        if (shapeFill)
+            fill(fillCol, lifespan);
+        else
+            noFill();
+        
+        if (shapeStrtoke) {
+            stroke(strokeCol, lifespan);
+            strokeWeight(rippleWidth);       
+        } else
+            noStroke();  
+        
+        // Draw a ripple shape
+        beginShape();
+        curveVertex(location.x + pointsRadius[numOfPoints - 1] * sin(angle * (numOfPoints - 1)), location.y + pointsRadius[numOfPoints - 1] * cos(angle * (numOfPoints - 1)));
+        for (int i = 0;i < numOfPoints;i++)
+        {
+            curveVertex(location.x + pointsRadius[i] * sin(angle * i), location.y + pointsRadius[i] * cos(angle * i));
+        }
+        curveVertex(location.x + pointsRadius[0] * sin(0), location.y + pointsRadius[0] * cos(0)); 
+        curveVertex(location.x + pointsRadius[1] * sin(angle), location.y + pointsRadius[1] * cos(angle)); 
+        endShape();
+        
+    }
+    
+    //Check if particle reached end of life
+    public boolean isDead() {
+        if (lifespan < 0.0f) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+// THE SHAKE SYSYEM CALSS
+class ShakeSystem {
+  ArrayList shakes;
+  PVector origin;
+
+  // Constructor
+  ShakeSystem(PVector location) {
+    origin = location.copy();
+    shakes = new ArrayList();
+  }
+ 
+  public void addShake(int ctlPts, int maxRad, int minRad, float growRate, 
+                    int lifeSpan, float fadeSpeed, int rippleWidth, 
+                    boolean shapeFill, boolean shapeStrtoke, int strokeColor, int fillColor, int radiusRate) {
+    shakes.add(new Shake(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed,
+                                rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor, radiusRate));
+  }
+
+  // Update all the arcs in the system
+  public void run() {
+    Iterator<Shake> it = shakes.iterator();
+    while (it.hasNext()) {
+      Shake s = it.next();
+      s.run();
+      if (s.isDead()) {
+        it.remove();
+      }
+    }
+  }
+}
+
+
+// INDIVIDUAL PARTICLE CLASS
+class Shake {
+
+  // PVector velocity;
+  // PVector acceleration;
+  // float size;
+  PVector location; 
+  float growth;
+  float lifespan;
+  float fadeSpeed;
+  int rippleWidth;
+  float[] pointsRadius;
+  float angle;
+  int numOfPoints;
+  int minRad;
+  int maxRad;
+  boolean shapeFill;
+  boolean shapeStrtoke;
+  int fillCol;
+  int strokeCol;
+  int radiusRate;
+ 
+  // Coinstructor
+  Shake(PVector l, int ctlPts, int maxR, int minR, float growRate, 
+                    int lifeSpan, float fadeSpd, int rippleW, 
+                    boolean shpFill, boolean shpStrtoke, int strkColor, int fillColor, int radiusR) {
+    
+    // How many points define the ripple shape
+    numOfPoints = ctlPts;    
+    
+    // How wiggly the shape will be
+    maxRad = maxR;
+    minRad = minR;
+    
+    //how fast will the ripple grow/expand 
+    growth = growRate;
+    
+    // Lifespan Max value is 255
+    // If the particle to be fully opaque when it first appears
+    lifespan = lifeSpan; 
+    
+    // how fast the arcs fade
+    fadeSpeed = fadeSpd;
+
+    // The width of the ripple shape stroke (if used)
+    rippleWidth = rippleW;    
+    
+    // The color of the fill / stroke (feel free to add more colors)
+    strokeCol = strkColor;
+    fillCol = fillColor;
+
+    //  Fill and stroke visibility
+    shapeFill = shpFill;
+    shapeStrtoke = shpStrtoke;
+
+    radiusRate = radiusR;
+
+    // Calculate the center of the ripple
+    // And the angle between the shape points
+    location = l.copy();
+    angle = TWO_PI/(float)numOfPoints;
+
+    // Fill the array of points which defines the ripple shape
+    // Each array element is a random point-raduis, within the range: minRad <> maxRad
+    pointsRadius = new float[numOfPoints];
+    for(int i=0;i<numOfPoints;i++){
+      pointsRadius[i] = random(minRad, maxRad);
+    }
+  }
+
+  public void run() {
+    update();
+    display();
+  }
+
+  // Update Particle shape / position / size
+  public void update() {
+    // velocity.add(acceleration);
+    // location.add(velocity);
+    for(int i=0;i<numOfPoints;i++)
+    {
+      pointsRadius[i] += growth;
+    }
+    lifespan -= fadeSpeed;
+  }
+ 
+  // Draw the particle
+  public void display() {
+
+    // Particle style
+    if(shapeFill)
+      fill(fillCol, lifespan);
+    else
+      noFill();
+
+    if(shapeStrtoke){
+      stroke(strokeCol, lifespan);
+      strokeWeight(rippleWidth);
+    } else
+      noStroke();  
+
+    // Draw arc
+    beginShape();
+    curveVertex(location.x + pointsRadius[numOfPoints-1]*cos(angle*(numOfPoints-1))*radiusRate, location.y - pointsRadius[numOfPoints-1]*sin(angle*(numOfPoints-1))*radiusRate);
+    for(int i=0;i<numOfPoints;i++)
+    {
+      curveVertex(location.x + pointsRadius[i]*cos(angle*i)*radiusRate, location.y - pointsRadius[i]*sin(angle*i)*radiusRate);
+    }
+    curveVertex(location.x + pointsRadius[0]*cos(0)*radiusRate, location.y - pointsRadius[0]*sin(0)*radiusRate); 
+    // curveVertex(location.x + pointsRadius[1]*cos(angle), location.y - pointsRadius[1]*sin(angle)); 
+    endShape();
+  }
+
+  // Check if particle reached end of life
+  public boolean isDead() {
+    if (lifespan < 0.0f) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+  public void settings() {  fullScreen(); }
+  static public void main(String[] passedArgs) {
+    String[] appletArgs = new String[] { "heat_tracking_ripples" };
+    if (passedArgs != null) {
+      PApplet.main(concat(appletArgs, passedArgs));
+    } else {
+      PApplet.main(appletArgs);
+    }
+  }
 }
