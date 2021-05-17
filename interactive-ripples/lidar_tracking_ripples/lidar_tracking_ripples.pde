@@ -1,7 +1,7 @@
 // This Sketch is getting data from the
-// LIDAR Sensor Sensor Over OSC
-// Connect the sensor and run "lidar-scanner-osc.py"
+// LIDAR Sensor Over OSC
 // To get data from the sensor and broadcast it over OSC
+// connect the sensor and run "lidar-scanner-osc.py"
 // Run this sketch to start listening to the broadcast and draw ripples
 
 import controlP5.*;
@@ -33,12 +33,19 @@ int maxAngle = 270;
 PVector[] points = new PVector[360];
 PVector lidarPos;
 
-// Ripples Particle system 
-ParticleSystem ps;
+PVector userPos = new PVector(0,0);
+int userPosThreshold = 20;
+
+//Particle systems
 PVector ps_origin;
+RippleParticleSystem ripplesPS;
+RainParticleSystem rainPS;
 
 // ###  Settings Sliders and Deafault Values setup ####
 ControlP5 cp5;
+
+// which scenario to play
+int selectedScenario = 0;
 
 // How many points define the ripple shape
 int control_points = 24;
@@ -69,7 +76,7 @@ color fill_color = color(200, 200, 200);
 // how often to create a new particle (Higher value is slower)
 int freq = 4;
 
-boolean is_live_mode = true;
+boolean is_live_mode = false;
 
 // ###  End of Deafault Sliders Values ####
 
@@ -86,7 +93,7 @@ static final int INFOLINEDELAY = 8;
 // SCENE SETUP
 void setup() {
   // Set Canvas Size
-  //size(1600,900);
+  // size(1600,900);
   fullScreen();
   println(width, height);
   frameRate(30);
@@ -108,12 +115,13 @@ void setup() {
 
   // Add new particle system
   ps_origin = new PVector(width/2, height/2); 
-  ps = new ParticleSystem(ps_origin);
+  ripplesPS = new RippleParticleSystem(ps_origin);
+  rainPS = new RainParticleSystem(ps_origin);
   
   // load UI videos
-  playlist[0] = new Movie(this,"info-line.mov");
-  playlist[1] = new Movie(this,"info-line.mov");
-  playlist[2] = new Movie(this,"info-line.mov");
+  playlist[0] = new Movie(this,"info-line.mp4");
+  playlist[1] = new Movie(this,"info-line.mp4");
+  playlist[2] = new Movie(this,"info-line.mp4");
   playlist[currentMovieIndex].loop();
   
   background(0);
@@ -132,9 +140,14 @@ void draw() {
   if (frameCount % freq == 0){
     stroke_color = cp5.get(ColorWheel.class,"strokeCol").getRGB();
     fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB();    
-    ps.addParticle(control_points, max_radius, min_radius, growth, 
+    ripplesPS.addParticle(control_points, max_radius, min_radius, growth, 
                     life_span, fade_speed, ripple_width, shape_fill, 
                     shape_strtoke, stroke_color, fill_color);
+
+    rainPS.addParticle(max_radius, min_radius, growth, 
+                    life_span, fade_speed, ripple_width, shape_fill, 
+                    shape_strtoke, stroke_color, fill_color);
+
   }
   
   if (is_live_mode == true) {
@@ -154,10 +167,11 @@ void visualizeLidarTracking(){
   // an array to store all the points in the Area of interest for user postion estimation
   PVector[] interestPoints = new PVector[0];
   // user position
-  PVector userPos = new PVector(0,0);
+  PVector newUserPos = new PVector(0,0);
   
-  // Draw area of interest
+  // Draw area of interest frame
   stroke(120, 0, 0);
+  noFill();
   rect(tlCorner.x , tlCorner.y, brCorner.x - tlCorner.x, brCorner.y - tlCorner.y);
 
   // Draw Lidar detection points data
@@ -180,31 +194,64 @@ void visualizeLidarTracking(){
   // And calculate the avarage position of all the points
   for (int i = 0; i < interestPoints.length; i++){
     if (interestPoints[i] != null){
-      userPos.add(interestPoints[i]);
+      newUserPos.add(interestPoints[i]);
     }
   }
-  userPos.x = userPos.x / interestPoints.length;
-  userPos.y = userPos.y / interestPoints.length;
+  newUserPos.x = newUserPos.x / interestPoints.length;
+  newUserPos.y = newUserPos.y / interestPoints.length;
   
-  // *** DRAW VIDEOS  ***
-  // playlist[currentMovieIndex].loop();
-   image(playlist[currentMovieIndex], userPos.x - movieWidth/2, userPos.y - movieHeight * 1.2, movieWidth, movieHeight);
+  // Update postion only if user moved enough
+  // To prevent GUI poistion jitter
+  if(userPos.dist(newUserPos) > userPosThreshold){
+    userPos = newUserPos.copy();
+  }
 
+  // Display the selected scenario
+  switch (selectedScenario) {
+    // *** DRAW RIPPLES ***
+    case(0):
+      ripplesPS.origin = userPos.copy();
+      ripplesPS.run();
+      //ps_origin.x = mouseX;
+      //ps_origin.y = mouseY;
+      // ripplesPS.origin = ps_origin.copy();
+      break;
+    
+    // *** DRAW RAIN ***
+    case(1):
+      int userBoxRad = 200;
+      ps_origin.x = random(tlCorner.x, brCorner.x);
+      ps_origin.y = random(tlCorner.y, brCorner.y);  
+      while(ps_origin.x > userPos.x - userBoxRad && 
+            ps_origin.x < userPos.x + userBoxRad &&
+            ps_origin.y > userPos.y - userBoxRad &&
+            ps_origin.y < userPos.y + userBoxRad){
+        
+        ps_origin.x = random(tlCorner.x, brCorner.x);
+        ps_origin.y = random(tlCorner.y, brCorner.y);  
+      }
+      
+      rainPS.origin = ps_origin.copy();
+      rainPS.run();
 
-  // *** DRAW RIPPLES ***
-  //ps_origin.x = mouseX;
-  //ps_origin.y = mouseY;
-  ps_origin = userPos.copy();
-  ps.origin = ps_origin.copy();
-  // calculate and update all particle system elemets
-  ps.run();
+      break;
+    
+    // *** DRAW INFO VIDEO  ***
+    case(2):
+      playlist[currentMovieIndex].loop();
+      pushMatrix();
+      translate(userPos.x + movieWidth/2, userPos.y + movieHeight);
+      scale(-1,-1);
+      image(playlist[currentMovieIndex], 0, 0, movieWidth, movieHeight);
+      popMatrix();
+      break;
 
+  }
 
   // Draw green circle around the user (for testing)
   // stroke(0,255,0);
   // fill(0, 0, 0, 30);
-  // ellipse(userPos.x, userPos.y, 280, 280);
-
+  // ellipse(userPos.x, userPos.y, 280, 280);  
 }
 
 /* incoming osc message are forwarded to the oscEvent method. */
@@ -243,8 +290,29 @@ void movieEvent(Movie m) {
     m.read();
 }
 
+void scenario_selector(int a) {
+  selectedScenario = a;
+  // println("a radio Button event: " + a + " / " + selectedScenario);
+}
+
 void drawSliders(){
   
+  // Scenarios list
+  cp5.addRadioButton("scenario_selector")
+    .setPosition(300, 10)
+    .setSize(20,20)
+    .setColorForeground(color(120))
+    .setColorActive(color(255))
+    .setColorLabel(color(255))
+    .setItemsPerRow(1)
+    .setSpacingColumn(50)
+    .addItem("ripples", 0)
+    .addItem("rain", 1)
+    .addItem("info", 2)
+    .activate(0)
+    ;
+          
+  // particles parameters
   cp5.addSlider("control_points")
     .setPosition(10,10)
     .setSize(100,15)

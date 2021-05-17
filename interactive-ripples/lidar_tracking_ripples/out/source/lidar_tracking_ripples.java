@@ -55,12 +55,19 @@ int maxAngle = 270;
 PVector[] points = new PVector[360];
 PVector lidarPos;
 
-// Ripples Particle system 
-ParticleSystem ps;
+PVector userPos = new PVector(0,0);
+int userPosThreshold = 20;
+
+//Particle systems
 PVector ps_origin;
+RippleParticleSystem ripplesPS;
+RainParticleSystem rainPS;
 
 // ###  Settings Sliders and Deafault Values setup ####
 ControlP5 cp5;
+
+// which scenario to play
+int selectedScenario = 0;
 
 // How many points define the ripple shape
 int control_points = 24;
@@ -91,7 +98,7 @@ int fill_color = color(200, 200, 200);
 // how often to create a new particle (Higher value is slower)
 int freq = 4;
 
-boolean is_live_mode = true;
+boolean is_live_mode = false;
 
 // ###  End of Deafault Sliders Values ####
 
@@ -108,7 +115,7 @@ static final int INFOLINEDELAY = 8;
 // SCENE SETUP
 public void setup() {
   // Set Canvas Size
-  //size(1600,900);
+  // size(1600,900);
   
   println(width, height);
   frameRate(30);
@@ -130,12 +137,13 @@ public void setup() {
 
   // Add new particle system
   ps_origin = new PVector(width/2, height/2); 
-  ps = new ParticleSystem(ps_origin);
+  ripplesPS = new RippleParticleSystem(ps_origin);
+  rainPS = new RainParticleSystem(ps_origin);
   
   // load UI videos
-  playlist[0] = new Movie(this,"info-line.mov");
-  playlist[1] = new Movie(this,"info-line.mov");
-  playlist[2] = new Movie(this,"info-line.mov");
+  playlist[0] = new Movie(this,"info-line.mp4");
+  playlist[1] = new Movie(this,"info-line.mp4");
+  playlist[2] = new Movie(this,"info-line.mp4");
   playlist[currentMovieIndex].loop();
   
   background(0);
@@ -154,9 +162,14 @@ public void draw() {
   if (frameCount % freq == 0){
     stroke_color = cp5.get(ColorWheel.class,"strokeCol").getRGB();
     fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB();    
-    ps.addParticle(control_points, max_radius, min_radius, growth, 
+    ripplesPS.addParticle(control_points, max_radius, min_radius, growth, 
                     life_span, fade_speed, ripple_width, shape_fill, 
                     shape_strtoke, stroke_color, fill_color);
+
+    rainPS.addParticle(max_radius, min_radius, growth, 
+                    life_span, fade_speed, ripple_width, shape_fill, 
+                    shape_strtoke, stroke_color, fill_color);
+
   }
   
   if (is_live_mode == true) {
@@ -176,10 +189,11 @@ public void visualizeLidarTracking(){
   // an array to store all the points in the Area of interest for user postion estimation
   PVector[] interestPoints = new PVector[0];
   // user position
-  PVector userPos = new PVector(0,0);
+  PVector newUserPos = new PVector(0,0);
   
-  // Draw area of interest
+  // Draw area of interest frame
   stroke(120, 0, 0);
+  noFill();
   rect(tlCorner.x , tlCorner.y, brCorner.x - tlCorner.x, brCorner.y - tlCorner.y);
 
   // Draw Lidar detection points data
@@ -202,31 +216,64 @@ public void visualizeLidarTracking(){
   // And calculate the avarage position of all the points
   for (int i = 0; i < interestPoints.length; i++){
     if (interestPoints[i] != null){
-      userPos.add(interestPoints[i]);
+      newUserPos.add(interestPoints[i]);
     }
   }
-  userPos.x = userPos.x / interestPoints.length;
-  userPos.y = userPos.y / interestPoints.length;
+  newUserPos.x = newUserPos.x / interestPoints.length;
+  newUserPos.y = newUserPos.y / interestPoints.length;
   
-  // *** DRAW VIDEOS  ***
-  // playlist[currentMovieIndex].loop();
-  // image(playlist[currentMovieIndex], userPos.x - movieWidth/2, userPos.y - movieHeight * 1.2, movieWidth, movieHeight);
+  // Update postion only if user moved enough
+  // To prevent GUI poistion jitter
+  if(userPos.dist(newUserPos) > userPosThreshold){
+    userPos = newUserPos.copy();
+  }
 
+  // Display the selected scenario
+  switch (selectedScenario) {
+    // *** DRAW RIPPLES ***
+    case(0):
+      ripplesPS.origin = userPos.copy();
+      ripplesPS.run();
+      //ps_origin.x = mouseX;
+      //ps_origin.y = mouseY;
+      // ripplesPS.origin = ps_origin.copy();
+      break;
+    
+    // *** DRAW RAIN ***
+    case(1):
+      int userBoxRad = 200;
+      ps_origin.x = random(tlCorner.x, brCorner.x);
+      ps_origin.y = random(tlCorner.y, brCorner.y);  
+      while(ps_origin.x > userPos.x - userBoxRad && 
+            ps_origin.x < userPos.x + userBoxRad &&
+            ps_origin.y > userPos.y - userBoxRad &&
+            ps_origin.y < userPos.y + userBoxRad){
+        
+        ps_origin.x = random(tlCorner.x, brCorner.x);
+        ps_origin.y = random(tlCorner.y, brCorner.y);  
+      }
+      
+      rainPS.origin = ps_origin.copy();
+      rainPS.run();
 
-  // *** DRAW RIPPLES ***
-  //ps_origin.x = mouseX;
-  //ps_origin.y = mouseY;
-  ps_origin = userPos.copy();
-  ps.origin = ps_origin.copy();
-  // calculate and update all particle system elemets
-  ps.run();
+      break;
+    
+    // *** DRAW INFO VIDEO  ***
+    case(2):
+      playlist[currentMovieIndex].loop();
+      pushMatrix();
+      translate(userPos.x + movieWidth/2, userPos.y + movieHeight);
+      scale(-1,-1);
+      image(playlist[currentMovieIndex], 0, 0, movieWidth, movieHeight);
+      popMatrix();
+      break;
 
+  }
 
   // Draw green circle around the user (for testing)
   // stroke(0,255,0);
   // fill(0, 0, 0, 30);
-  // ellipse(userPos.x, userPos.y, 280, 280);
-
+  // ellipse(userPos.x, userPos.y, 280, 280);  
 }
 
 /* incoming osc message are forwarded to the oscEvent method. */
@@ -265,8 +312,30 @@ public void movieEvent(Movie m) {
     m.read();
 }
 
+public void scenario_selector(int a) {
+  selectedScenario = a;
+  // println("a radio Button event: " + a + " / " + selectedScenario);
+}
+
 public void drawSliders(){
   
+  // Scenarios list
+  cp5.addRadioButton("scenario_selector")
+    .setPosition(300, 10)
+    .setSize(20,20)
+    .setColorForeground(color(120))
+    .setColorActive(color(255))
+    .setColorLabel(color(255))
+    .setItemsPerRow(1)
+    .setSpacingColumn(50)
+    .addItem("ripples", 0)
+    .addItem("rain", 1)
+    .addItem("info", 2)
+    .activate(0)
+    ;
+          
+
+  // particles parameters
   cp5.addSlider("control_points")
     .setPosition(10,10)
     .setSize(100,15)
@@ -345,28 +414,28 @@ public void drawSliders(){
 
 }
 // THE PARTICLE SYSYEM CALSS
-class ParticleSystem {
+class RainParticleSystem {
   ArrayList particles;
   PVector origin;
 
   // Constructor
-  ParticleSystem(PVector location) {
+  RainParticleSystem(PVector location) {
     origin = location.copy();
     particles = new ArrayList();
   }
  
-  public void addParticle(int ctlPts, int maxRad, int minRad, float growRate, 
+  public void addParticle(int maxRad, int minRad, float growRate, 
                     int lifeSpan, float fadeSpeed, int rippleWidth, 
                     boolean shapeFill, boolean shapeStrtoke, int strokeColor, int fillColor) {
-    particles.add(new Particle(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed, 
+    particles.add(new RainParticle(origin, maxRad, minRad, growRate, lifeSpan, fadeSpeed, 
                                 rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor));
   }
 
   // Update all the particles in the system
   public void run() {
-    Iterator<Particle> it = particles.iterator();
+    Iterator<RainParticle> it = particles.iterator();
     while (it.hasNext()) {
-      Particle p = it.next();
+      RainParticle p = it.next();
       p.run();
       if (p.isDead()) {
         it.remove();
@@ -377,7 +446,145 @@ class ParticleSystem {
 
 
 // INDIVIDUAL PARTICLE CLASS
-class Particle {
+class RainParticle {
+
+  // PVector velocity;
+  // PVector acceleration;
+  // float size;
+  PVector location; 
+  float growth;
+  float lifespan;
+  float fadeSpeed;
+  int rippleWidth;
+  float rippleRadius;
+  float angle;
+  int minRad;
+  int maxRad;
+  float rippleRings[];
+  boolean shapeFill;
+  boolean shapeStrtoke;
+  int fillCol;
+  int strokeCol;
+ 
+  // Coinstructor
+  RainParticle(PVector l, int maxR, int minR, float growRate, 
+                    int lifeSpan, float fadeSpd, int rippleW, 
+                    boolean shpFill, boolean shpStrtoke, int strkColor, int fillColor) {
+        
+    // How wiggly the shape will be
+    maxRad = maxR;
+    minRad = minR;
+    
+    //how fast will the ripple grow/expand 
+    growth = growRate;
+    
+    // Lifespan Max value is 255
+    // If the particle to be fully opaque when it first appears
+    lifespan = lifeSpan; 
+    
+    // how fast the particles fade
+    fadeSpeed = fadeSpd;
+    
+    // The width of the ripple shape stroke (if used)
+    rippleWidth = rippleW;    
+    
+    // The color of the fill / stroke (feel free to add more colors)
+    strokeCol = strkColor;
+    fillCol = fillColor;
+
+    //  Fill and stroke visibility
+    shapeFill = shpFill;
+    shapeStrtoke = shpStrtoke;
+
+    // Calculate the center of the ripple
+    // And the angle between the shape points
+    location = l.copy();
+
+
+    // how many rings to show
+    int numOfRings = 3;
+    rippleRings = new float[numOfRings];
+
+    // Fill the array of points which defines the ripple shape
+    // Each array element is a random point-raduis, within the range: minRad <> maxRad
+    rippleRadius = random(minRad, maxRad);
+  }
+
+  public void run() {
+    update();
+    display();
+  }
+
+  // Update RainParticle shape / position / size
+  public void update() {
+    // velocity.add(acceleration);
+    // location.add(velocity);
+    rippleRadius += growth;
+    lifespan -= fadeSpeed;
+  }
+ 
+  // Draw the particle
+  public void display() {
+
+      // RainParticle style
+      if(shapeFill)
+        fill(fillCol, lifespan);
+      else
+        noFill();
+
+      if(shapeStrtoke){
+        stroke(strokeCol, lifespan);
+        strokeWeight(rippleWidth);       
+      } else
+        noStroke();  
+
+      ellipse(location.x, location.y, rippleRadius, rippleRadius);
+  
+  }
+
+  // Check if particle reached end of life
+  public boolean isDead() {
+    if (lifespan < 0.0f) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+// THE PARTICLE SYSYEM CALSS
+class RippleParticleSystem {
+  ArrayList particles;
+  PVector origin;
+
+  // Constructor
+  RippleParticleSystem(PVector location) {
+    origin = location.copy();
+    particles = new ArrayList();
+  }
+ 
+  public void addParticle(int ctlPts, int maxRad, int minRad, float growRate, 
+                    int lifeSpan, float fadeSpeed, int rippleWidth, 
+                    boolean shapeFill, boolean shapeStrtoke, int strokeColor, int fillColor) {
+    particles.add(new RippleParticle(origin, ctlPts, maxRad, minRad, growRate, lifeSpan, fadeSpeed, 
+                                rippleWidth, shapeFill, shapeStrtoke, strokeColor, fillColor));
+  }
+
+  // Update all the particles in the system
+  public void run() {
+    Iterator<RippleParticle> it = particles.iterator();
+    while (it.hasNext()) {
+      RippleParticle p = it.next();
+      p.run();
+      if (p.isDead()) {
+        it.remove();
+      }
+    }
+  }
+}
+
+
+// INDIVIDUAL PARTICLE CLASS
+class RippleParticle {
 
   // PVector velocity;
   // PVector acceleration;
@@ -398,7 +605,7 @@ class Particle {
   int strokeCol;
  
   // Coinstructor
-  Particle(PVector l, int ctlPts, int maxR, int minR, float growRate, 
+  RippleParticle(PVector l, int ctlPts, int maxR, int minR, float growRate, 
                     int lifeSpan, float fadeSpd, int rippleW, 
                     boolean shpFill, boolean shpStrtoke, int strkColor, int fillColor) {
     
@@ -450,7 +657,7 @@ class Particle {
     display();
   }
 
-  // Update Particle shape / position / size
+  // Update RippleParticle shape / position / size
   public void update() {
     // velocity.add(acceleration);
     // location.add(velocity);
@@ -464,7 +671,7 @@ class Particle {
   // Draw the particle
   public void display() {
 
-    // Particle style
+    // RippleParticle style
     if(shapeFill)
       fill(fillCol, lifespan);
     else
