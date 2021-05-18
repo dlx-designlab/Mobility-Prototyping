@@ -21,9 +21,9 @@ import java.io.IOException;
 public class lidar_tracking_ripples extends PApplet {
 
 // This Sketch is getting data from the
-// LIDAR Sensor Sensor Over OSC
-// Connect the sensor and run "lidar-scanner-osc.py"
+// LIDAR Sensor Over OSC
 // To get data from the sensor and broadcast it over OSC
+// connect the sensor and run "lidar-scanner-osc.py"
 // Run this sketch to start listening to the broadcast and draw ripples
 
 
@@ -33,6 +33,8 @@ public class lidar_tracking_ripples extends PApplet {
 
 
 OscP5 oscP5;
+Accordion accordion;
+
 NetAddress myBroadcastLocation; 
 
 // use this to scale the dimetions coming down from the lidar (mm to pixels)
@@ -41,13 +43,15 @@ float scale = 1;
 float screenScaleX;
 float screenScaleY;
 
-// Area of interest coordinates
+// Area of Interest (AOI) coordinates
 // For calibration place an object in the top left and bottom right corners
 // Click the mouse where the objects appers and update the coordinates below:
+PVector tlCorner = new PVector(370,370);
+PVector brCorner = new PVector(1555,1030);
 // PVector tlCorner = new PVector(1340,620);
 // PVector brCorner = new PVector(2518,1290);
-PVector tlCorner = new PVector(700,520);
-PVector brCorner = new PVector(1880,1200);
+// PVector tlCorner = new PVector(690,520);
+// PVector brCorner = new PVector(1880,1200);
 int minAngle = 90;
 int maxAngle = 270;
 
@@ -98,19 +102,18 @@ int fill_color = color(200, 200, 200);
 // how often to create a new particle (Higher value is slower)
 int freq = 4;
 
-boolean is_live_mode = false;
+boolean is_live_mode = true;
+boolean show_aoi_frame = true;
+boolean show_sensor_data = true;
 
 // ###  End of Deafault Sliders Values ####
 
 // UI Videos
-int movieWidth = 640;
-int movieHeight = 360;
+int movieWidth = 800;
+int movieHeight = 450;
 int numMovies = 3;
 Movie[] playlist = new Movie[numMovies]; 
 int currentMovieIndex  = 0;
-static final int PAYMENT = 6;
-static final int INFOLINE = 7;
-static final int INFOLINEDELAY = 8;
 
 // SCENE SETUP
 public void setup() {
@@ -129,7 +132,7 @@ public void setup() {
   drawSliders();
 
   // Define LIDAR Sensnsor position
-  lidarPos = new PVector(width/2, height/8);   
+  lidarPos = new PVector(width/2, 20);   
 
   // Used to scale the Area of interest to full screen szie in "Live Mode"
   screenScaleX = width / (brCorner.x - tlCorner.x);
@@ -141,38 +144,19 @@ public void setup() {
   rainPS = new RainParticleSystem(ps_origin);
   
   // load UI videos
-  playlist[0] = new Movie(this,"info-line.mp4");
-  playlist[1] = new Movie(this,"info-line.mp4");
-  playlist[2] = new Movie(this,"info-line.mp4");
+  playlist[0] = new Movie(this,"info_line.mp4");
+  playlist[1] = new Movie(this,"info_line_delay.mp4");
+  playlist[2] = new Movie(this,"pay_remind_red.mp4");
   playlist[currentMovieIndex].loop();
-  
-  background(0);
-  stroke(255);
-  strokeWeight(4);
-  
+    
 }
 
 
 // DRAW SCENE EVERY FRAME 
 public void draw() {
   background(0);  
-
-  // update particle system position  
-  // add new particle to the system every x frames 
-  if (frameCount % freq == 0){
-    stroke_color = cp5.get(ColorWheel.class,"strokeCol").getRGB();
-    fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB();    
-    ripplesPS.addParticle(control_points, max_radius, min_radius, growth, 
-                    life_span, fade_speed, ripple_width, shape_fill, 
-                    shape_strtoke, stroke_color, fill_color);
-
-    rainPS.addParticle(max_radius, min_radius, growth, 
-                    life_span, fade_speed, ripple_width, shape_fill, 
-                    shape_strtoke, stroke_color, fill_color);
-
-  }
   
-  if (is_live_mode == true) {
+  if (is_live_mode) {
     pushMatrix();
     scale(screenScaleX, screenScaleX);
     translate(-tlCorner.x, -tlCorner.y);
@@ -192,12 +176,20 @@ public void visualizeLidarTracking(){
   PVector newUserPos = new PVector(0,0);
   
   // Draw area of interest frame
-  stroke(120, 0, 0);
-  noFill();
-  rect(tlCorner.x , tlCorner.y, brCorner.x - tlCorner.x, brCorner.y - tlCorner.y);
+  if (show_aoi_frame){
+    stroke(120, 0, 0);
+    strokeWeight(2);
+    noFill();
+    rect(tlCorner.x , tlCorner.y, brCorner.x - tlCorner.x, brCorner.y - tlCorner.y);
+  }
 
   // Draw Lidar detection points data
-  // Points inside the interest area are drawn brighter
+  // Points inside the interest area are drawn brighter and tracked
+  if(show_sensor_data){
+    strokeWeight(4); 
+  }else{
+    strokeWeight(0); 
+  }
   for (int i = minAngle; i < maxAngle; i++){
     if (points[i] != null){
       // check if the dot is within the area of interest 
@@ -214,14 +206,18 @@ public void visualizeLidarTracking(){
 
   // Add tracker if a user was detected
   // And calculate the avarage position of all the points
-  for (int i = 0; i < interestPoints.length; i++){
-    if (interestPoints[i] != null){
-      newUserPos.add(interestPoints[i]);
+  if (interestPoints.length > 0){
+    for (int i = 0; i < interestPoints.length; i++){
+      if (interestPoints[i] != null){
+        newUserPos.add(interestPoints[i]);
+      }
     }
+    newUserPos.x = newUserPos.x / interestPoints.length;
+    newUserPos.y = newUserPos.y / interestPoints.length;    
+  } else{
+    newUserPos = new PVector(0,0);
   }
-  newUserPos.x = newUserPos.x / interestPoints.length;
-  newUserPos.y = newUserPos.y / interestPoints.length;
-  
+
   // Update postion only if user moved enough
   // To prevent GUI poistion jitter
   if(userPos.dist(newUserPos) > userPosThreshold){
@@ -232,6 +228,16 @@ public void visualizeLidarTracking(){
   switch (selectedScenario) {
     // *** DRAW RIPPLES ***
     case(0):
+      // update particle system position  
+      // add new particle to the system every x frames 
+      if (frameCount % freq == 0){
+        stroke_color = cp5.get(ColorWheel.class,"strokeCol").getRGB();
+        fill_color = cp5.get(ColorWheel.class,"fillCol").getRGB();    
+        ripplesPS.addParticle(control_points, max_radius, min_radius, growth, 
+                        life_span, fade_speed, ripple_width, shape_fill, 
+                        shape_strtoke, stroke_color, fill_color);
+      }
+
       ripplesPS.origin = userPos.copy();
       ripplesPS.run();
       //ps_origin.x = mouseX;
@@ -241,6 +247,14 @@ public void visualizeLidarTracking(){
     
     // *** DRAW RAIN ***
     case(1):
+      // update particle system position  
+      // add new particle to the system every x frames 
+      if (frameCount % freq == 0){
+        rainPS.addParticle(max_radius, min_radius, growth, 
+                    life_span, fade_speed, ripple_width, shape_fill, 
+                    shape_strtoke, stroke_color, fill_color);
+      }
+
       int userBoxRad = 200;
       ps_origin.x = random(tlCorner.x, brCorner.x);
       ps_origin.y = random(tlCorner.y, brCorner.y);  
@@ -258,15 +272,21 @@ public void visualizeLidarTracking(){
 
       break;
     
-    // *** DRAW INFO VIDEO  ***
+    // *** DRAW INFO VIDEOS  ***
     case(2):
-      playlist[currentMovieIndex].loop();
-      pushMatrix();
-      translate(userPos.x + movieWidth/2, userPos.y + movieHeight);
-      scale(-1,-1);
-      image(playlist[currentMovieIndex], 0, 0, movieWidth, movieHeight);
-      popMatrix();
+      currentMovieIndex = 0;
+      drawVideo(1.2f);
       break;
+
+    case(3):
+      currentMovieIndex = 1;
+      drawVideo(1.2f);
+      break;
+    
+    case(4):
+      currentMovieIndex = 2;
+      drawVideo(0.5f);
+      break;      
 
   }
 
@@ -274,6 +294,15 @@ public void visualizeLidarTracking(){
   // stroke(0,255,0);
   // fill(0, 0, 0, 30);
   // ellipse(userPos.x, userPos.y, 280, 280);  
+}
+
+public void drawVideo(float videoOffset){
+      playlist[currentMovieIndex].loop();
+      pushMatrix();
+      translate(userPos.x + movieWidth/2, userPos.y + movieHeight * videoOffset);
+      scale(-1,-1);
+      image(playlist[currentMovieIndex], 0, 0, movieWidth, movieHeight);
+      popMatrix();
 }
 
 /* incoming osc message are forwarded to the oscEvent method. */
@@ -318,46 +347,84 @@ public void scenario_selector(int a) {
 }
 
 public void drawSliders(){
-  
+
+  Group g1 = cp5.addGroup("GUI Controls")
+                .setBackgroundColor(color(20, 20, 20))
+                .setBackgroundHeight(200)
+                ;
+
+  cp5.addToggle("is_live_mode")
+    .setPosition(10,10)
+    .setSize(35,15)
+    .setCaptionLabel("LIVE")
+    .moveTo(g1)
+    ;
+
+  cp5.addToggle("show_aoi_frame")
+    .setPosition(55,10)
+    .setSize(35,15)
+    .setCaptionLabel("AoI")
+    .moveTo(g1)
+    ;
+
+  cp5.addToggle("show_sensor_data")
+    .setPosition(100,10)
+    .setSize(35,15)
+    .setCaptionLabel("SENSOR")
+    .moveTo(g1)
+    ;
+
   // Scenarios list
   cp5.addRadioButton("scenario_selector")
-    .setPosition(300, 10)
+    .setPosition(10, 60)
     .setSize(20,20)
     .setColorForeground(color(120))
     .setColorActive(color(255))
     .setColorLabel(color(255))
     .setItemsPerRow(1)
     .setSpacingColumn(50)
-    .addItem("ripples", 0)
-    .addItem("rain", 1)
-    .addItem("info", 2)
+    .addItem("Ripples",     0)
+    .addItem("Ambient",     1)
+    .addItem("Ride Info",   2)
+    .addItem("Delay Info",  3)
+    .addItem("Fare Remind", 4)        
     .activate(0)
+    .moveTo(g1)
     ;
-          
 
+
+  Group g2 = cp5.addGroup("Ripples Control")
+                .setBackgroundColor(color(20, 20, 20))
+                .setBackgroundHeight(550)
+                ;
+          
   // particles parameters
   cp5.addSlider("control_points")
     .setPosition(10,10)
     .setSize(100,15)
     .setRange(4,100)
+    .moveTo(g2)    
     ;
 
   cp5.addSlider("min_radius")
     .setPosition(10,30)
     .setSize(100,15)
     .setRange(1,300)
+    .moveTo(g2)        
     ;
 
   cp5.addSlider("max_radius")
     .setPosition(10,50)
     .setSize(100,15)
     .setRange(1,300)
+    .moveTo(g2)        
     ;
   
   cp5.addSlider("growth")
     .setPosition(10,70)
     .setSize(100,15)
     .setRange(0,10)
+    .moveTo(g2)    
     ;
 
   cp5.addSlider("life_span")
@@ -365,52 +432,65 @@ public void drawSliders(){
     .setSize(100,15)
     .setRange(1, 255)
     .setValue(255)
+    .moveTo(g2)    
     ;
 
   cp5.addSlider("fade_speed")
     .setPosition(10,110)
     .setSize(100,15)
     .setRange(0,10)
+    .moveTo(g2)    
     ;
   
   cp5.addSlider("ripple_width")
     .setPosition(10,130)
     .setSize(100,15)
     .setRange(0,50)
+    .moveTo(g2)    
     ;
 
   cp5.addSlider("freq")
     .setPosition(10,150)
     .setSize(100,15)
     .setRange(1,100)
+    .moveTo(g2)    
     ;    
 
   cp5.addToggle("shape_fill")
     .setPosition(10,170)
     .setSize(30,15)
     .setCaptionLabel("fill")
-     ;
+    .moveTo(g2)    
+    ;
   cp5.addToggle("shape_strtoke")
     .setPosition(50,170)
     .setSize(30,15)
     .setCaptionLabel("stroke")
-    ;
-
-  cp5.addToggle("is_live_mode")
-    .setPosition(90,170)
-    .setSize(30,15)
-    .setCaptionLabel("live")
+    .moveTo(g2)    
     ;
 
   cp5.addColorWheel("strokeCol" , 10 , 220 , 120 )
     .setRGB(stroke_color)
     .setCaptionLabel("stroke_color")
+    .moveTo(g2)    
     ;
 
   cp5.addColorWheel("fillCol" , 10 , 360 , 120 )
     .setRGB(fill_color)
     .setCaptionLabel("fill_color")
+    .moveTo(g2)    
     ;
+
+  // Construct theaccordion menu 
+  accordion = cp5.addAccordion("acc")
+                 .setPosition(10,10)
+                 .setWidth(200)
+                 .addItem(g1)
+                 .addItem(g2)                 
+                 ;
+  
+  // accordion.open(0,1,2);
+  accordion.setCollapseMode(Accordion.MULTI);
 
 }
 // THE PARTICLE SYSYEM CALSS
