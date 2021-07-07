@@ -20,4 +20,19 @@
   - simpletest.py (get sensor data)
 
 
+# Rippple Scenario Run
+## Command
+```esc``` for stopping the run.
+### Coding Animation
+- Onboarding: ```o```
+- Drive Start: ```s```
+- Drive Stop: ```p```
+- Rain: ```r```
+### Pre-made Animation
+- Payment: ```0```
+- Info line: ```1```
+- Info line delay: ```2```
 
+## Tips for running the command
+- Performance is highly dependent on the machine spec under the environment of showing to 50 inch display (4096 x 2160). 
+- If you are switching between scenarios during a single run, the video will become choppy. If this happens, please start the run again and press the command for the scenario you want to show.

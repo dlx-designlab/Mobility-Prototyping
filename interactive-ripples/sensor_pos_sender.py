@@ -32,14 +32,22 @@ print("ip:" + str(IP) + ", Port: " + str(port))
 
 def main():
     #print("\n" + "get sensor data")
-    sensordata = np.array(sensor.pixels)
-    sensordata = sensordata[:, ::-1]
+    sensordata_raw = np.array(sensor.pixels)
+    # sensordata = sensordata[:, ::-1]
+
+    # adjust the orientation and get data size for display
+    sensordata=np.fliplr(np.flipud(sensordata_raw))[3:-1]
+    # sensordata[1][4] = 0
+    # sensordata[0][4] = 0
+    # sensordata[0][4] = 0
+    print(sensordata)
+
     #for row in sensordata:
     #    print (["{0:.1f}".format(temp) for temp in row])
-    
+
     print("\n")
     print(sensordata.max())
-    
+
     if sensordata.max() > basetemp:
         #pos =list(zip(*np.where(sensordata > sensordata.max() * 0.95)))
         pos =list(zip(*np.where(sensordata == sensordata.max())))
