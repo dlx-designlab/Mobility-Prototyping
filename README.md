@@ -5,7 +5,7 @@ The latest working version is usuing the LIDAR Sensor.
  
  How to Run:
  * Connect the lidar sensor with a USB cable.
- * Run `heat_sensor_pos_sender.py`: `sudo python3 lidar-scanner-osc.py`  
+ * Run the LIDAR Sensor Script: `sudo python3 lidar-scanner-osc.py`  
  this will start broadcasting lidar data ove OSC
  * Open `lidar_tracking_ripples.pde` app in Processing and press Play
  
