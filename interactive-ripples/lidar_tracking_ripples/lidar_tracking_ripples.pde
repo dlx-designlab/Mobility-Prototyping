@@ -55,11 +55,11 @@ int selectedScenario = 0;
 int control_points = 24;
 
 // How wiggly the shape will be
-int max_radius = 100;
-int min_radius = 90;
+int max_radius = 184;
+int min_radius = 164;
 
 //how fast will the ripple grow/expand 
-float growth = 1.8;
+float growth = 2.4;
 
 // Lifespan Max value is 255 if the particle to be fully opaque when it first appears
 int life_span = 255; 
@@ -68,17 +68,17 @@ int life_span = 255;
 float fade_speed = 10;
 
 // The width of the ripple shape stroke (if used)
-int ripple_width = 7;    
+int ripple_width = 6;    
 
 //  Fill and stroke visibility
 boolean shape_fill = false;
 boolean shape_strtoke = true;
 
-color stroke_color = color(255, 255, 255);
+color stroke_color = color(200, 200, 200);
 color fill_color = color(200, 200, 200);
 
 // how often to create a new particle (Higher value is slower)
-int freq = 4;
+int freq = 6;
 
 boolean is_live_mode = true;
 boolean show_aoi_frame = true;
@@ -124,7 +124,7 @@ void setup() {
   // load UI videos
   playlist[0] = new Movie(this,"info_line.mp4");
   playlist[1] = new Movie(this,"info_line_delay.mp4");
-  playlist[2] = new Movie(this,"pay_remind_red.mp4");
+  playlist[2] = new Movie(this,"payment_reminder_big.mp4");
   playlist[currentMovieIndex].loop();
     
 }
@@ -263,7 +263,7 @@ void visualizeLidarTracking(){
     
     case(4):
       currentMovieIndex = 2;
-      drawVideo(1.0);
+      drawVideo(0.8);
       break;      
 
   }
@@ -294,8 +294,8 @@ void oscEvent(OscMessage theOscMessage) {
   // }else{
   //   points = new PVector[0];
   // }
-  //print(" addrpattern: "+theOscMessage.addrPattern());
-  //println(theOscMessage.get(0).floatValue() + " " + theOscMessage.get(1).floatValue()  + " " + theOscMessage.typetag());
+  print(" addrpattern: "+theOscMessage.addrPattern());
+  println(theOscMessage.get(0).floatValue() + " " + theOscMessage.get(1).floatValue()  + " " + theOscMessage.typetag());
   //println(theOscMessage.get(0).floatValue() + " " + theOscMessage.get(1).floatValue()  + " " + theOscMessage.get(2).floatValue());  
 
 }
@@ -388,14 +388,16 @@ void drawSliders(){
     .setPosition(10,30)
     .setSize(100,15)
     .setRange(1,300)
-    .moveTo(g2)        
+    .moveTo(g2)
+    .setValue(164)    
     ;
 
   cp5.addSlider("max_radius")
     .setPosition(10,50)
     .setSize(100,15)
     .setRange(1,300)
-    .moveTo(g2)        
+    .moveTo(g2)
+    .setValue(184)
     ;
   
   cp5.addSlider("growth")
