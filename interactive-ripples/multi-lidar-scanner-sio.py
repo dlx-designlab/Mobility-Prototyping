@@ -4,24 +4,53 @@ from queue import Queue
 import time
 import socketio
 import math
+from statistics import mean
 # import numpy as np 
-# from pythonosc import udp_client
-
-
-sio = socketio.Client()
 
 # list of ports to which the lidar sensors are conneted
 # RPILIDAR Ports:
 # Linux   : "/dev/ttyUSB0"
 # MacOS   : "/dev/cu.SLAB_USBtoUART"
 # Windows : "COM5"
-sensors_ports = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
-data_send_ferq = 0.5 #how often to send the data to the server (seconds)
 
-# area of interes (actial screen size in mm) coordinates
-margin = 850
+# Each sensor needs a port, x,y position (mm) in the real world and rotation angle (degrees)
+sensors_config = [
+    {   
+        "port": "/dev/ttyUSB0",
+        "x": 580,
+        "y": -220,
+        "a": 180
+    },
+    {   
+        "port": "/dev/ttyUSB1",
+        "x": 1185,
+        "y": 750,
+        "a": 0
+    },
+    {   
+        "port": "/dev/ttyUSB2",
+        "x": 0,
+        "y": 750,
+        "a": 0
+    }    
+]
+
+# area of interes (actual screen/step-area size in mm) coordinates
+aoi_coordinates = ((0,0),(1180,660))
+
+sio = socketio.Client()
+data_send_ferq = 0.2 #how often to send the data to the server (seconds)
+
+# the scale is to convert real world dimentions to screen Pixels
+# to determine the scaling, set the margin to 0
+# place an object at the bottom right corner of the screen
+# in the front-end click in the center of the detected object
+# devide the "X" coordinate by 100 and miltiply by the current scale 
 scale = 30
-aoe_coordinates = ((0,0),(1180,660))
+
+# use this in combinaion with scale to show objects which would usually appear off screen
+margin = 800
+
 
 class lidarReaderThread(threading.Thread):
     def __init__(self, sensor_port, pos_x, pos_y, pos_r, stop_event):
@@ -35,7 +64,7 @@ class lidarReaderThread(threading.Thread):
         # an arry to store all the lidar points
         self.points = [[0]*2 for i in range(360)] 
 
-        #Lidar Postition'
+        #Lidar Postition
         self.sensor_pos_x = pos_x
         self.sensor_pos_y = pos_y
         self.sensor_rotation = pos_r
@@ -49,12 +78,9 @@ class lidarReaderThread(threading.Thread):
 
     def run(self):
         
-        # global client
         global sio
         scan_generator = self.lidar.force_scan()
         print(f"LIDAR {self.sensor_port} is Scanning...")
-        
-        # osc_channel = f"lidar_{self.sensor_port[-1]}"
 
         for count, scan in enumerate(scan_generator()):
             scan_angle = round(scan.angle)
@@ -78,18 +104,17 @@ class lidarReaderThread(threading.Thread):
         self.lidar.disconnect()
 
 
-def lidar_scan():
+def lidar_scanner():
 
     # event to stop the lidar threads 
     stop_event = threading.Event()
     
     # Init the LIDAR sensors scan
-    # Each sensor needs a port, x,y position (mm) in the real world and rotation angle (degrees)
-    lidar_01_thread  = lidarReaderThread(sensors_ports[0], 580, -350, 0, stop_event)
-    lidar_01_thread.start()
-
-    lidar_02_thread  = lidarReaderThread(sensors_ports[1], 580, +750, 180, stop_event)
-    lidar_02_thread.start()
+    lidar_sensors_threads = []
+    for sensor in sensors_config:        
+        new_thread  = lidarReaderThread(sensor["port"], sensor["x"], sensor["y"], sensor["a"], stop_event)
+        lidar_sensors_threads.append(new_thread)
+        lidar_sensors_threads[-1].start()
     
     print("All sensors scanning! Press Ctrl-C to stop")
 
@@ -98,29 +123,25 @@ def lidar_scan():
             time.sleep(data_send_ferq)
 
             # send LIDAR data to the socket
-            # lidar_01_data = {"points": lidar_01_thread.points, "id": lidar_01_thread.sensor_port}
-            lidar_01_data = {"points": [[(p[0]+margin)/scale, (p[1]+margin)/scale] for p in lidar_01_thread.points], "id": lidar_01_thread.sensor_port}
-            sio.emit('updatelidar', lidar_01_data)
+            for sensor_thread in lidar_sensors_threads:
+                sensor_data = {"points": [[(p[0]+margin)/scale, (p[1]+margin)/scale] for p in sensor_thread.points], "id": sensor_thread.sensor_port}
+                sio.emit('updatelidar', sensor_data)
 
-            lidar_02_data = {"points": [[(p[0]+margin)/scale, (p[1]+margin)/scale] for p in lidar_02_thread.points], "id": lidar_02_thread.sensor_port}
-            sio.emit('updatelidar', lidar_02_data)
-
-            # Calculate user position
+            # Calculate user positions and send to socket
             user_points = []
-            for i in range(360):
-                if (lidar_01_thread.points[i][0] > aoe_coordinates[0][0] and 
-                    lidar_01_thread.points[i][1] > aoe_coordinates[0][1] and 
-                    lidar_01_thread.points[i][0] < aoe_coordinates[1][0] and
-                    lidar_01_thread.points[i][1] < aoe_coordinates[1][1] ):
-                    
-                    user_points.append(lidar_01_thread.points[i])
-                    sio.emit("updatepassengerposition",{"id": 1,"position": {"x": (user_points[0][0] + margin) / scale, "y": (user_points[0][0]+margin) / scale }} )
+            for sensor_thread in lidar_sensors_threads:
+                for i in range(360):
+                    if (sensor_thread.points[i][0] > aoi_coordinates[0][0] and 
+                        sensor_thread.points[i][1] > aoi_coordinates[0][1] and 
+                        sensor_thread.points[i][0] < aoi_coordinates[1][0] and
+                        sensor_thread.points[i][1] < aoi_coordinates[1][1] ):
+                        
+                        user_points.append(sensor_thread.points[i])
 
-                # if (lidar_01_thread.points[i][0] > (aoe_coordinates[0][0] + margin)/30 and 
-                #     lidar_01_thread.points[i][1] > (aoe_coordinates[0][1] + margin)/30 and 
-                #     lidar_01_thread.points[i][0] < (aoe_coordinates[1][0] + margin)/30 and
-                #     lidar_01_thread.points[i][1] < (aoe_coordinates[1][1] + margin)/30 ):
-
+                if len(user_points) > 4:
+                    avg_x = mean([p[0] for p in user_points])
+                    avg_y = mean([p[1] for p in user_points])
+                    sio.emit("updatepassengerposition",{"id": 1,"position": {"x": (avg_x + margin) / scale, "y": (avg_y + margin) / scale }} )
 
             # print(user_points)
          
@@ -144,17 +165,10 @@ def disconnect():
 
 
 if __name__ == "__main__":
-
-    # setup OSC client
-    # oscServerIP = "127.0.0.1"
-    # oscServerPort = 12000
-    # oscChannel = "/lidar"
-    # client = udp_client.SimpleUDPClient(oscServerIP, oscServerPort)
-    # print(f"OSC client broadcasting to {oscServerIP} port {oscServerPort} channel '{oscChannel}' ")
     
     # setup socket io client
     sio.connect('http://localhost:3000')
     sio.emit('weather', "Snowwwyyy")
     # sio.wait()
 
-    lidar_scan()
+    lidar_scanner()
