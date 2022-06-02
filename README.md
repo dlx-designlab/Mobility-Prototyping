@@ -7,7 +7,10 @@ The latest working version is usuing the LIDAR Sensor.
  * Connect the lidar sensor with a USB cable.
  * Run the LIDAR Sensor Script: `sudo python3 lidar-scanner-osc.py`  
  this will start broadcasting lidar data ove OSC
- * Open `lidar_tracking_ripples.pde` app in Processing and press Play
+ * Run the Processing script: 
+    * option 1: via the terminal `processing-java --sketch=lidar_tracking_ripples --run`
+    * option 2: open `lidar_tracking_ripples.pde` app in Processing and press Play
+ * TIP: On the Demo PC in S-205 you can quickly launch the demo via `bash ~/Desktop/RUN_RIPPLE.sh`
  
  Callibrating Area of Interest (AOI):
  * Place an object in each corner of the screen top left and bottom right (top is closer to the sensor).  

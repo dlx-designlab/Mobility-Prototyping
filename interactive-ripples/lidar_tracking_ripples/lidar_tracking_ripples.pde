@@ -24,14 +24,14 @@ float screenScaleY;
 // Area of Interest (AOI) coordinates
 // For calibration place an object in the top left and bottom right corners
 // Click the mouse where the objects appers and update the coordinates below:
-PVector tlCorner = new PVector(370,370);
-PVector brCorner = new PVector(1555,1030);
+PVector tlCorner = new PVector(385,330);
+PVector brCorner = new PVector(1575,982);
 // PVector tlCorner = new PVector(1340,620);
 // PVector brCorner = new PVector(2518,1290);
 // PVector tlCorner = new PVector(690,520);
 // PVector brCorner = new PVector(1880,1200);
-int minAngle = 90;
-int maxAngle = 270;
+int minAngle = 1;
+int maxAngle = 359;
 
 // Bank of all he points detected by the LIDAR sensor, its center position
 PVector[] points = new PVector[360];
@@ -83,6 +83,7 @@ int freq = 6;
 boolean is_live_mode = true;
 boolean show_aoi_frame = true;
 boolean show_sensor_data = true;
+boolean show_user_circle = true;
 
 // ###  End of Deafault Sliders Values ####
 
@@ -96,7 +97,7 @@ int currentMovieIndex  = 0;
 // SCENE SETUP
 void setup() {
   // Set Canvas Size
-  // size(1600,900);
+  //size(1600,900);
   fullScreen();
   println(width, height);
   frameRate(30);
@@ -110,6 +111,8 @@ void setup() {
   drawSliders();
 
   // Define LIDAR Sensnsor position
+  // this is not the physical position in the real world, 
+  // shoud be somewhere visible in Calibration mode (not live mode) 
   lidarPos = new PVector(width/2, 20);   
 
   // Used to scale the Area of interest to full screen szie in "Live Mode"
@@ -220,7 +223,7 @@ void visualizeLidarTracking(){
       ripplesPS.run();
       //ps_origin.x = mouseX;
       //ps_origin.y = mouseY;
-      // ripplesPS.origin = ps_origin.copy();
+      //ripplesPS.origin = ps_origin.copy();
       break;
     
     // *** DRAW RAIN ***
@@ -269,9 +272,12 @@ void visualizeLidarTracking(){
   }
 
   // Draw green circle around the user (for testing)
-  // stroke(0,255,0);
-  // fill(0, 0, 0, 30);
-  // ellipse(userPos.x, userPos.y, 280, 280);  
+   if (show_user_circle){
+      stroke(0,255,0);
+      fill(0, 0, 0, 30);
+      ellipse(userPos.x, userPos.y, 280, 280);  
+   }
+
 }
 
 void drawVideo(float videoOffset){
@@ -294,8 +300,8 @@ void oscEvent(OscMessage theOscMessage) {
   // }else{
   //   points = new PVector[0];
   // }
-  print(" addrpattern: "+theOscMessage.addrPattern());
-  println(theOscMessage.get(0).floatValue() + " " + theOscMessage.get(1).floatValue()  + " " + theOscMessage.typetag());
+  //print(" addrpattern: "+theOscMessage.addrPattern());
+  //println(theOscMessage.get(0).floatValue() + " " + theOscMessage.get(1).floatValue()  + " " + theOscMessage.typetag());
   //println(theOscMessage.get(0).floatValue() + " " + theOscMessage.get(1).floatValue()  + " " + theOscMessage.get(2).floatValue());  
 
 }
@@ -305,7 +311,8 @@ void addPoint(float angle, float dist){
   int intAngle = int(angle);
   dist = dist / scale;
   if(angle < points.length){
-    PVector new_point = new PVector(lidarPos.x + dist*sin(radians(angle)), lidarPos.y - dist*cos(radians(angle)) );
+    // swap the + and - in the fomula below depending on the orientation of the sensor
+    PVector new_point = new PVector(lidarPos.x - dist*sin(radians(angle)), lidarPos.y + dist*cos(radians(angle)) );
     points[intAngle] = new_point;
   }
   //println(angle, dist);
@@ -349,6 +356,13 @@ void drawSliders(){
     .setPosition(100,10)
     .setSize(35,15)
     .setCaptionLabel("SENSOR")
+    .moveTo(g1)
+    ;
+
+  cp5.addToggle("show_user_circle")
+    .setPosition(145,10)
+    .setSize(35,15)
+    .setCaptionLabel("USER")
     .moveTo(g1)
     ;
 

@@ -5,7 +5,7 @@ import time
 import socketio
 import math
 from statistics import mean
-# import numpy as np 
+import numpy as np 
 
 # list of ports to which the lidar sensors are conneted
 # RPILIDAR Ports:
@@ -15,13 +15,13 @@ from statistics import mean
 
 # Each sensor needs a port, x,y position (mm) in the real world and rotation angle (degrees)
 sensors_config = [
-    {   
+    {
         "port": "/dev/ttyUSB0",
         "x": 580,
         "y": -220,
         "a": 180
     },
-    {   
+    {  
         "port": "/dev/ttyUSB1",
         "x": 1185,
         "y": 750,
@@ -46,10 +46,10 @@ data_send_ferq = 0.2 #how often to send the data to the server (seconds)
 # place an object at the bottom right corner of the screen
 # in the front-end click in the center of the detected object
 # devide the "X" coordinate by 100 and miltiply by the current scale 
-scale = 30
+scale = 11.7
 
 # use this in combinaion with scale to show objects which would usually appear off screen
-margin = 800
+margin = 0
 
 
 class lidarReaderThread(threading.Thread):
@@ -82,17 +82,30 @@ class lidarReaderThread(threading.Thread):
         scan_generator = self.lidar.force_scan()
         print(f"LIDAR {self.sensor_port} is Scanning...")
 
+        last_angle = 0
         for count, scan in enumerate(scan_generator()):
             scan_angle = round(scan.angle)
             if scan_angle < 360:
                 new_point_x = self.sensor_pos_x + scan.distance * math.sin(math.radians(scan.angle + self.sensor_rotation))
                 new_point_y = self.sensor_pos_y - scan.distance * math.cos(math.radians(scan.angle + self.sensor_rotation))
                 self.points[scan_angle][0] = new_point_x
-                self.points[scan_angle][1] = new_point_y              
+                self.points[scan_angle][1] = new_point_y
+            
+            # check for skipped scan angles an reset clear the array data for those angles.
+            # skipped_angles = scan_angle - last_angle
+            # if skipped_angles > 1:
+            #     # print(f" {skipped_angles} ")
+            #     for i in range(skipped_angles):
+            #         if last_angle + i +1 < 360:
+            #             self.points[last_angle+i+1][0] = self.sensor_pos_x
+            #             self.points[last_angle+i+1][1] = self.sensor_pos_y
 
-                # print(self.points)
-                # print(scan)            
-                # print(self.sensor_port, count, scan)
+            last_angle = scan_angle
+
+            # print(self.points)
+            # print(scan)            
+            # print(self.sensor_port, count, scan)
+
             if self.stop_event.is_set():
                 break
 
@@ -139,9 +152,19 @@ def lidar_scanner():
                         user_points.append(sensor_thread.points[i])
 
                 if len(user_points) > 4:
-                    avg_x = mean([p[0] for p in user_points])
-                    avg_y = mean([p[1] for p in user_points])
-                    sio.emit("updatepassengerposition",{"id": 1,"position": {"x": (avg_x + margin) / scale, "y": (avg_y + margin) / scale }} )
+                    x_points = np.array([p[0] for p in user_points])
+                    y_points = np.array([p[1] for p in user_points])                                            
+                    
+                    # get user position                    
+                    avg_x = np.mean(x_points) #mean([p[0] for p in user_points])
+                    avg_y = np.mean(y_points) #mean([p[1] for p in user_points])
+
+                    # get user orientation
+                    user_angle = math.atan(np.polyfit(x_points, y_points, 1)[0])
+                    # print(math.degrees(user_angle))
+
+                    sio.emit("updatepassengerposition",{"id": 1,"position": {"x": (avg_x + margin) / scale, "y": (avg_y + margin) / scale, "rotation": user_angle }} )
+
 
             # print(user_points)
          
@@ -161,14 +184,16 @@ def my_message(data):
 
 @sio.event
 def disconnect():
+    # todo: disconnect lidar sensors : set thread event > stop_event.set()
     print('disconnected from server')
+
 
 
 if __name__ == "__main__":
     
     # setup socket io client
     sio.connect('http://localhost:3000')
-    sio.emit('weather', "Snowwwyyy")
+    sio.emit("updatepassengerposition",{"id": 1,"position": {"x": 0, "y": 0}} )    
     # sio.wait()
 
     lidar_scanner()
