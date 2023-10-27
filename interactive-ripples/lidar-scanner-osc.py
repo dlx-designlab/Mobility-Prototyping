@@ -25,7 +25,7 @@ def simple_scan():
     print("Press Ctrl-C to stop")
     try:
         for count, scan in enumerate(scan_generator()):
-            # print(count, scan)
+            #print(count, scan)
             client.send_message(oscChannel, [scan.angle, scan.distance, scan.start_flag])
 
     except KeyboardInterrupt:

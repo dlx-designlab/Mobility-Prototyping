@@ -24,8 +24,8 @@ float screenScaleY;
 // Area of Interest (AOI) coordinates
 // For calibration place an object in the top left and bottom right corners
 // Click the mouse where the objects appers and update the coordinates below:
-PVector tlCorner = new PVector(385,330);
-PVector brCorner = new PVector(1575,982);
+PVector tlCorner = new PVector(540,260);
+PVector brCorner = new PVector(1870,1170);
 // PVector tlCorner = new PVector(1340,620);
 // PVector brCorner = new PVector(2518,1290);
 // PVector tlCorner = new PVector(690,520);
@@ -94,11 +94,12 @@ int numMovies = 3;
 Movie[] playlist = new Movie[numMovies]; 
 int currentMovieIndex  = 0;
 
-// SCENE SETUP
+// SCENE SETUP  
 void setup() {
   // Set Canvas Size
-  //size(1600,900);
-  fullScreen();
+  size(2400,1600);
+  surface.setLocation(0,0);
+  //fullScreen(P2D);
   println(width, height);
   frameRate(30);
 
@@ -109,6 +110,21 @@ void setup() {
   // create control panel
   cp5 = new ControlP5(this);
   drawSliders();
+  
+  // KEY SHORTCUTS:
+  //Scenario Select:
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {selectedScenario = 0;}}, '1');
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {selectedScenario = 1;}}, '2');
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {selectedScenario = 2;}}, '3');
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {selectedScenario = 3;}}, '4');
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {selectedScenario = 4;}}, '5');
+
+  //Mode Select:
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {is_live_mode = !is_live_mode;}}, 'l');
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {show_aoi_frame = !show_aoi_frame;}}, 'f');
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {show_sensor_data = !show_sensor_data;}}, 's');
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {show_user_circle = !show_user_circle;}}, 'u');
+
 
   // Define LIDAR Sensnsor position
   // this is not the physical position in the real world, 
