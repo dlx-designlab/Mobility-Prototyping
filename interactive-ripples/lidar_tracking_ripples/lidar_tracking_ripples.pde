@@ -45,11 +45,18 @@ PVector ps_origin;
 RippleParticleSystem ripplesPS;
 RainParticleSystem rainPS;
 
+//FireFlies PS specific vars
+boolean isMouseInside = true; // Tracks if the mouse is inside the canvas
+fireFliesParticleSystem fireFliesPS;
+Integer guidingStartTime = null;
+Integer userLastMovedTime = null;
+
+
 // ###  Settings Sliders and Deafault Values setup ####
 ControlP5 cp5;
 
 // which scenario to play
-int selectedScenario = 0;
+int selectedScenario = 5;
 
 // How many points define the ripple shape
 int control_points = 24;
@@ -80,7 +87,7 @@ color fill_color = color(200, 200, 200);
 // how often to create a new particle (Higher value is slower)
 int freq = 6;
 
-boolean is_live_mode = true;
+boolean is_live_mode = false;
 boolean show_aoi_frame = true;
 boolean show_sensor_data = true;
 boolean show_user_circle = true;
@@ -97,7 +104,7 @@ int currentMovieIndex  = 0;
 // SCENE SETUP  
 void setup() {
   // Set Canvas Size
-  size(2400,1600);
+  size(1024,768);
   surface.setLocation(0,0);
   //fullScreen(P2D);
   println(width, height);
@@ -139,6 +146,7 @@ void setup() {
   ps_origin = new PVector(width/2, height/2); 
   ripplesPS = new RippleParticleSystem(ps_origin);
   rainPS = new RainParticleSystem(ps_origin);
+  fireFliesPS = new fireFliesParticleSystem();
   
   // load UI videos
   playlist[0] = new Movie(this,"info_line.mp4");
@@ -163,6 +171,22 @@ void draw() {
     visualizeLidarTracking();
   } 
 
+}
+
+void mouseMoved() {
+  // Only trigger if user is within the canvas
+  if (isUserInsideCanvas()) {
+    for (Firefly firefly : fireFliesPS.fireflies) {
+      if (firefly.state.equals("idle")) {
+        firefly.state = "approach";
+      }
+    }
+  }
+}
+
+// Updated isUserInsideCanvas function
+boolean isUserInsideCanvas() {
+   return isMouseInside;
 }
 
 void visualizeLidarTracking(){
@@ -283,7 +307,10 @@ void visualizeLidarTracking(){
     case(4):
       currentMovieIndex = 2;
       drawVideo(0.8);
-      break;      
+      break;
+    case(5):
+      fireFliesPS.run();
+      break;	   
 
   }
 
