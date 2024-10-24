@@ -16,7 +16,7 @@ Accordion accordion;
 NetAddress myBroadcastLocation; 
 
 // use this to scale the dimetions coming down from the lidar (mm to pixels)
-float scale = 1;
+float scale = 3.1;
 // used for live Mode make Area of interest full screen
 float screenScaleX;
 float screenScaleY;
@@ -24,8 +24,8 @@ float screenScaleY;
 // Area of Interest (AOI) coordinates
 // For calibration place an object in the top left and bottom right corners
 // Click the mouse where the objects appers and update the coordinates below:
-PVector tlCorner = new PVector(540,260);
-PVector brCorner = new PVector(1870,1170);
+PVector tlCorner = new PVector(0,0);
+PVector brCorner = new PVector(1440,900);
 // PVector tlCorner = new PVector(1340,620);
 // PVector brCorner = new PVector(2518,1290);
 // PVector tlCorner = new PVector(690,520);
@@ -56,7 +56,9 @@ Integer userLastMovedTime = null;
 ControlP5 cp5;
 
 // which scenario to play
-int selectedScenario = 5;
+int selectedScenario = 0;
+// Dafault position when no user is detected
+PVector defaultUserPos = new PVector((tlCorner.x + brCorner.x) / 2,(tlCorner.y + brCorner.y) / 2);
 
 // How many points define the ripple shape
 int control_points = 24;
@@ -101,14 +103,18 @@ int numMovies = 3;
 Movie[] playlist = new Movie[numMovies]; 
 int currentMovieIndex  = 0;
 
+void settings() { 
+  // Set Canvas Size
+  System.setProperty("jogl.disable.openglcore", "false");
+  //size(1920,1200);
+  fullScreen();
+}
 // SCENE SETUP  
 void setup() {
-  // Set Canvas Size
-  size(1024,768);
+  System.setProperty("jogl.disable.openglcore", "false");
   surface.setLocation(0,0);
-  //fullScreen(P2D);
   println(width, height);
-  frameRate(30);
+  frameRate(60);
 
   // OSC Server Setup
   oscP5 = new OscP5(this,12000);
@@ -125,6 +131,7 @@ void setup() {
   cp5.mapKeyFor(new ControlKey() {public void keyEvent() {selectedScenario = 2;}}, '3');
   cp5.mapKeyFor(new ControlKey() {public void keyEvent() {selectedScenario = 3;}}, '4');
   cp5.mapKeyFor(new ControlKey() {public void keyEvent() {selectedScenario = 4;}}, '5');
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {selectedScenario = 5;}}, '6');  
 
   //Mode Select:
   cp5.mapKeyFor(new ControlKey() {public void keyEvent() {is_live_mode = !is_live_mode;}}, 'l');
@@ -136,7 +143,7 @@ void setup() {
   // Define LIDAR Sensnsor position
   // this is not the physical position in the real world, 
   // shoud be somewhere visible in Calibration mode (not live mode) 
-  lidarPos = new PVector(width/2, 20);   
+  lidarPos = new PVector(-50,450);   
 
   // Used to scale the Area of interest to full screen szie in "Live Mode"
   screenScaleX = width / (brCorner.x - tlCorner.x);
@@ -236,7 +243,7 @@ void visualizeLidarTracking(){
     newUserPos.x = newUserPos.x / interestPoints.length;
     newUserPos.y = newUserPos.y / interestPoints.length;    
   } else{
-    newUserPos = new PVector(0,0);
+    newUserPos = defaultUserPos.copy();
   }
 
   // Update postion only if user moved enough
@@ -309,6 +316,7 @@ void visualizeLidarTracking(){
       drawVideo(0.8);
       break;
     case(5):
+      fireFliesPS.userPos = userPos.copy();
       fireFliesPS.run();
       break;	   
 
@@ -423,6 +431,7 @@ void drawSliders(){
     .addItem("Ride Info",   2)
     .addItem("Delay Info",  3)
     .addItem("Fare Remind", 4)        
+    .addItem("Fireflies",   5)            
     .activate(0)
     .moveTo(g1)
     ;

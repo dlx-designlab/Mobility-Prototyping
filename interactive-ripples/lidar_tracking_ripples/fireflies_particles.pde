@@ -19,8 +19,8 @@ class fireFliesParticleSystem{
   fireFliesParticleSystem(){
 
     // Initialize points of destination
-    destinations.add(new PVector(100, height / 5)); // First destination
-    destinations.add(new PVector(width - 100, height / 5)); // Second destination
+    destinations.add(new PVector(650, 56)); // First destination
+    destinations.add(new PVector(1403, 344)); // Second destination
 
     // Initialize fireflies
     for (int i = 0; i < 5; i++) {
@@ -93,7 +93,7 @@ class fireFliesParticleSystem{
 
   // Handle destination initiation logic
   void handleDestinationInitiation() {
-    userPos = getUserPosition();
+    // userPos = getUserPosition();
     PVector currentDestination = destinations.get(currentDestinationIndex);
 
     // Check if user is near the current destination
@@ -135,7 +135,7 @@ class fireFliesParticleSystem{
       return;
     }
 
-    PVector userPos = getUserPosition();
+    // PVector userPos = getUserPosition();
     if (userPos.dist(userLastPosition) > 1) {
       userLastMovedTime = millis(); // Update last moved time
     }
