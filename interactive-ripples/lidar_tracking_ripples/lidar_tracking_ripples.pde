@@ -16,7 +16,8 @@ Accordion accordion;
 NetAddress myBroadcastLocation; 
 
 // use this to scale the dimetions coming down from the lidar (mm to pixels)
-float scale = 3.1;
+//float scale = 3.1; //Projector Scale (need To adjust per installation)
+float scale = 0.55; //Screen Scale
 // used for live Mode make Area of interest full screen
 float screenScaleX;
 float screenScaleY;
@@ -24,8 +25,8 @@ float screenScaleY;
 // Area of Interest (AOI) coordinates
 // For calibration place an object in the top left and bottom right corners
 // Click the mouse where the objects appers and update the coordinates below:
-PVector tlCorner = new PVector(0,0);
-PVector brCorner = new PVector(1440,900);
+PVector tlCorner = new PVector(80,500);
+PVector brCorner = new PVector(2000,1580);
 // PVector tlCorner = new PVector(1340,620);
 // PVector brCorner = new PVector(2518,1290);
 // PVector tlCorner = new PVector(690,520);
@@ -47,7 +48,7 @@ RainParticleSystem rainPS;
 
 //FireFlies PS specific vars
 boolean isMouseInside = true; // Tracks if the mouse is inside the canvas
-fireFliesParticleSystem fireFliesPS;
+FirefliesParticleSystem fireFliesPS;
 Integer guidingStartTime = null;
 Integer userLastMovedTime = null;
 
@@ -58,7 +59,7 @@ ControlP5 cp5;
 // which scenario to play
 int selectedScenario = 0;
 // Dafault position when no user is detected
-PVector defaultUserPos = new PVector((tlCorner.x + brCorner.x) / 2,(tlCorner.y + brCorner.y) / 2);
+PVector defaultUserPos = new PVector((tlCorner.x + brCorner.x) ,(tlCorner.y + brCorner.y)/2 );
 
 // How many points define the ripple shape
 int control_points = 24;
@@ -93,6 +94,7 @@ boolean is_live_mode = false;
 boolean show_aoi_frame = true;
 boolean show_sensor_data = true;
 boolean show_user_circle = true;
+boolean is_high_fps = false; 
 
 // ###  End of Deafault Sliders Values ####
 
@@ -114,7 +116,7 @@ void setup() {
   System.setProperty("jogl.disable.openglcore", "false");
   surface.setLocation(0,0);
   println(width, height);
-  frameRate(60);
+  frameRate(30);
 
   // OSC Server Setup
   oscP5 = new OscP5(this,12000);
@@ -139,11 +141,14 @@ void setup() {
   cp5.mapKeyFor(new ControlKey() {public void keyEvent() {show_sensor_data = !show_sensor_data;}}, 's');
   cp5.mapKeyFor(new ControlKey() {public void keyEvent() {show_user_circle = !show_user_circle;}}, 'u');
 
+  // Frame Rate Toggle:
+  // Press 'r' to toggle frame rate
+  cp5.mapKeyFor(new ControlKey() {public void keyEvent() {is_high_fps = !is_high_fps;}}, 'r'); 
 
   // Define LIDAR Sensnsor position
   // this is not the physical position in the real world, 
   // shoud be somewhere visible in Calibration mode (not live mode) 
-  lidarPos = new PVector(-50,450);   
+  lidarPos = new PVector(width/2,30);   
 
   // Used to scale the Area of interest to full screen szie in "Live Mode"
   screenScaleX = width / (brCorner.x - tlCorner.x);
@@ -153,7 +158,7 @@ void setup() {
   ps_origin = new PVector(width/2, height/2); 
   ripplesPS = new RippleParticleSystem(ps_origin);
   rainPS = new RainParticleSystem(ps_origin);
-  fireFliesPS = new fireFliesParticleSystem();
+  fireFliesPS = new FirefliesParticleSystem();
   
   // load UI videos
   playlist[0] = new Movie(this,"info_line.mp4");
@@ -167,6 +172,8 @@ void setup() {
 // DRAW SCENE EVERY FRAME 
 void draw() {
   background(0);  
+  
+  if (is_high_fps) {frameRate(60);} else { frameRate(30);}  
   
   if (is_live_mode) {
     pushMatrix();
@@ -316,6 +323,9 @@ void visualizeLidarTracking(){
       drawVideo(0.8);
       break;
     case(5):
+     // ps_origin.x = mouseX;
+     // ps_origin.y = mouseY;
+      fireFliesPS.userPos = ps_origin.copy();
       fireFliesPS.userPos = userPos.copy();
       fireFliesPS.run();
       break;	   
@@ -391,29 +401,36 @@ void drawSliders(){
 
   cp5.addToggle("is_live_mode")
     .setPosition(10,10)
-    .setSize(35,15)
+    .setSize(30,15)
     .setCaptionLabel("LIVE")
     .moveTo(g1)
     ;
 
   cp5.addToggle("show_aoi_frame")
-    .setPosition(55,10)
-    .setSize(35,15)
+    .setPosition(45,10)
+    .setSize(30,15)
     .setCaptionLabel("AoI")
     .moveTo(g1)
     ;
 
   cp5.addToggle("show_sensor_data")
-    .setPosition(100,10)
-    .setSize(35,15)
+    .setPosition(80,10)
+    .setSize(30,15)
     .setCaptionLabel("SENSOR")
     .moveTo(g1)
     ;
 
   cp5.addToggle("show_user_circle")
-    .setPosition(145,10)
-    .setSize(35,15)
+    .setPosition(115,10)
+    .setSize(30,15)
     .setCaptionLabel("USER")
+    .moveTo(g1)
+    ;
+
+  cp5.addToggle("is_high_fps")
+    .setPosition(150,10)
+    .setSize(30,15)
+    .setCaptionLabel("30/60 FPS")
     .moveTo(g1)
     ;
 

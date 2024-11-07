@@ -1,8 +1,9 @@
-class fireFliesParticleSystem{
+class FirefliesParticleSystem{
   ArrayList<Firefly> fireflies = new ArrayList<Firefly>();
   ArrayList<PVector> destinations = new ArrayList<PVector>();
   int currentDestinationIndex = 0;
 
+  PVector userPos;
   PVector userLastPosition;
   Integer guidingStartTime = null;
   Integer userLastMovedTime = null;
@@ -11,16 +12,17 @@ class fireFliesParticleSystem{
   int nudgeDelay = 5000;
   Integer destinationStayStartTime = null;
   boolean isDestinationInitiated = false;
-  int requiredStayDuration = 2000; // 2 seconds in milliseconds
-
-  PVector userPos;
+  int requiredStayDuration = 1000; // The required Time To stay in the destination to initiate and move to another
+  int distanceFromDestination = 150; // The distance of the user from the destination that is required to initiate the destination
 
   // Constructor
-  fireFliesParticleSystem(){
+  FirefliesParticleSystem(){
 
     // Initialize points of destination
-    destinations.add(new PVector(650, 56)); // First destination
-    destinations.add(new PVector(1403, 344)); // Second destination
+    destinations.add(new PVector(155,923)); // First destination
+    destinations.add(new PVector(1800,923)); // Second destination
+    destinations.add(new PVector(909, 897)); // Third destination
+
 
     // Initialize fireflies
     for (int i = 0; i < 5; i++) {
@@ -31,42 +33,81 @@ class fireFliesParticleSystem{
     userLastPosition = new PVector(width / 2, height / 2);
  }
 
+    void initiateNudge() {
+        for (Firefly firefly : fireflies) {
+            firefly.state = "nudge_circling";
+            firefly.cumulativeAngle = 0;
+            firefly.angle = random(TWO_PI);
+
+            // Randomize circle radius and angular speed for nudge circling
+            firefly.circleRadius = random(40, 60);
+            firefly.angularSpeed = random(0.05f, 0.1f);
+        }
+        lastNudgeTime = millis(); // Record the time of this nudge
+        println("Nudge initiated at: " + lastNudgeTime); 
+    }
+
   void run () {
     trackUserMovement();
     drawDestination();
     handleDestinationInitiation();
+
+  boolean userInsideCanvas = isUserInsideCanvas();
 
     // Reset fireflies to idle state if user is outside the canvas
     if (!isUserInsideCanvas()) {
       for (Firefly firefly : fireflies) {
         if (!firefly.state.equals("idle")) {
           firefly.state = "idle";
-          firefly.resetGlow();
         }
       }
-    }
-
-    // Check for nudge conditions globally
-    if (shouldNudge()) {
-      // Set nudge state for all fireflies
-      for (Firefly firefly : fireflies) {
-        firefly.state = "nudge_circling";
-        firefly.cumulativeAngle = 0;
-        firefly.angle = random(TWO_PI);
-        firefly.intensifyGlow();
-
-        // Randomize circle radius and angular speed for nudge circling
-        firefly.circleRadius = random(40, 60);
-        firefly.angularSpeed = random(0.05f, 0.1f);
-      }
-      lastNudgeTime = millis(); // Record the time of this nudge
+    } else {
+        // Transition fireflies from idle to approach when user is inside canvas
+        for (Firefly firefly : fireflies) {
+            if (firefly.state.equals("idle")) {
+                firefly.state = "approach";
+            }
+        }
     }
 
     // Update and display fireflies
     for (Firefly firefly : fireflies) {
-      firefly.update(destinations.get(currentDestinationIndex), userPos);
+      firefly.update(destinations.get(currentDestinationIndex), userPos, userInsideCanvas );
+
+   // Handle state transitions that depend on guidingStartTime
+        if (firefly.state.equals("circling") && firefly.cumulativeAngle >= 2 * TWO_PI) {
+            firefly.state = "guiding";
+            println("Firefly " + firefly.index + " entered guiding state");
+            if (guidingStartTime == null) {
+                guidingStartTime = millis(); // Start guiding timer
+                println("guidingStartTime set to " + guidingStartTime);
+            }
+            if (userLastMovedTime == null) {
+                userLastMovedTime = millis(); // Initialize last moved time
+                println("userLastMovedTime set to " + userLastMovedTime);
+            }
+        }
+
+        // Handle nudge alignment transition
+        if (firefly.state.equals("nudge_circling") && firefly.cumulativeAngle >= 2 * TWO_PI) {
+            firefly.state = "nudge_aligning";
+        }
+
+        // Return to guiding state if user starts moving
+        if (firefly.state.equals("nudge_aligning")) {
+            int currentTime = millis();
+            if (userLastMovedTime != null && currentTime - userLastMovedTime < 500) {
+                firefly.state = "guiding";
+            }
+        }
+
       firefly.display();
     }
+    // Check for nudge conditions globally
+    if (shouldNudge()) {
+        initiateNudge();
+    }
+
   }
 
   // Draw destinations
@@ -74,22 +115,15 @@ class fireFliesParticleSystem{
     for (int i = 0; i < destinations.size(); i++) {
       if (i == currentDestinationIndex) {
         // Highlight the current destination
-        fill(0, 255, 0);
+        fill(0, 250, 0);
       } else {
-        fill(255, 0, 0);
+        fill(250, 0, 0);
       }
       noStroke();
       ellipse(destinations.get(i).x, destinations.get(i).y, 15, 15);
     }
   }
 
-  PVector getUserPosition() {
-    if (!isUserInsideCanvas()) {
-      return new PVector(width / 2, height / 2);
-    } else {
-      return new PVector(mouseX, mouseY);
-    }
-  }
 
   // Handle destination initiation logic
   void handleDestinationInitiation() {
@@ -97,7 +131,7 @@ class fireFliesParticleSystem{
     PVector currentDestination = destinations.get(currentDestinationIndex);
 
     // Check if user is near the current destination
-    if (userPos.dist(currentDestination) < 15 && isUserInsideCanvas()) {
+    if (userPos.dist(currentDestination) < distanceFromDestination && isUserInsideCanvas()) {
       if (destinationStayStartTime == null) {
         destinationStayStartTime = millis();
       } else if (millis() - destinationStayStartTime >= requiredStayDuration) {
@@ -109,12 +143,13 @@ class fireFliesParticleSystem{
         // Check if all destinations are completed
         if (currentDestinationIndex >= destinations.size()) {
           // Task is complete
-          // Optionally, display a success message or trigger an event
-          noLoop(); // Stop the draw loop
+          
           fill(255);
           textSize(32);
           textAlign(CENTER, CENTER);
-          text("Task Complete!", width / 2, height / 2);
+          text("Toda", width / 2, height / 2);
+          currentDestinationIndex= 0 ;
+
         } else {
           // Reset fireflies to guide to the next destination
           for (Firefly firefly : fireflies) {
@@ -136,8 +171,9 @@ class fireFliesParticleSystem{
     }
 
     // PVector userPos = getUserPosition();
-    if (userPos.dist(userLastPosition) > 1) {
+    if (userPos.dist(userLastPosition) > 150) {
       userLastMovedTime = millis(); // Update last moved time
+      println("userLastMovedTime updated to " + userLastMovedTime);
     }
     userLastPosition = userPos.copy();
   }
@@ -147,42 +183,38 @@ class fireFliesParticleSystem{
 
     // Ensure that guiding has started
     if (guidingStartTime == null) {
+      println("shouldNudge: guidingStartTime is null");
       return false; // Do not nudge if guiding has not started
     }
 
     // Ensure that a minimum time has passed since guiding started
     if (currentTime - guidingStartTime < nudgeDelay) {
+      println("shouldNudge: nudgeDelay not passed yet");
       return false; // Don't nudge yet
     }
 
     // Check if cooldown has passed
     if (lastNudgeTime != null && currentTime - lastNudgeTime < nudgeCooldown) {
+      println("shouldNudge: nudgeCooldown not passed yet");
       return false;
     }
 
     // Check if user hasn't moved for more than 5 seconds
     if (userLastMovedTime != null && currentTime - userLastMovedTime > 5000) {
+      println("shouldNudge: user hasn't moved for more than 5 seconds");
       return true;
     }
 
     // Check if it's been more than 10 seconds since guiding started
     if (currentTime - guidingStartTime > 10000) {
+      println("shouldNudge: more than 10 seconds since guiding started");
       return true;
     }
-
+    println("shouldNudge: no conditions met");
     return false;
   }
 
-  // Add mouseEntered and mouseExited functions
-  void mouseEntered() {
-    isMouseInside = true;
-  }
-
-  void mouseExited() {
-    isMouseInside = false;
-  }
 }
-
 
 ///////////////////////////////////////////////////////
 
@@ -190,12 +222,12 @@ class fireFliesParticleSystem{
 class Firefly {
   PVector position;
   PVector velocity;
-  PVector acceleration;
-  PVector desiredVelocity; // New property for easing
+  PVector desiredVelocity; // Property for easing
   PVector userPos; 
   float maxSpeed;
   float angle;
   int index;
+  int maxDistanceFromUser; 
 
   // Glow properties
   float glowIntensity;
@@ -212,29 +244,30 @@ class Firefly {
   Firefly(PVector destination, int index) {
     this.position = destination.copy(); // Start at the first destination point
     this.velocity = PVector.random2D();
-    this.acceleration = new PVector(0, 0);
     this.desiredVelocity = this.velocity.copy(); // Initialize desiredVelocity
-    this.maxSpeed = 3;
     this.angle = random(TWO_PI);
     this.index = index; // Assign the index
-    this.position = destination.copy();
+    
+    
+
+    // FireFlies Controls
+    this.maxSpeed = 3.5; // Controls the max speed of the fireflies (it also affects the distance in which they spread) 
+    this.maxDistanceFromUser = 350; // Controls the maximum distance the Fireflies will get away from the user (pixels)
 
     // Initialize glow intensity and pulsing speed
     this.glowIntensity = random(100, 255);
     this.glowDirection = random(0.5f, 1.5f);
 
     // For circling behavior
-    this.circleRadius = random(50, 80);
+    this.circleRadius = random(120, 250);
     this.angularSpeed = random(0.02f, 0.1f);
-
-    // For tracking cumulative angle during circling phase
-    this.cumulativeAngle = 0;
-
+    this.cumulativeAngle = 0; 
+    
     // State variable
     this.state = "idle";
   }
 
-  void update(PVector currentDestination, PVector parentUserPos) {
+  void update(PVector currentDestination, PVector parentUserPos, boolean userInsideCanvas) {
     this.userPos = parentUserPos.copy();
 
     
@@ -242,7 +275,6 @@ class Firefly {
       // Return to idle state and circle around the center
       if (!this.state.equals("idle")) {
         this.state = "idle";
-        this.resetGlow();
       }
       this.circleAroundPoint(new PVector(width / 2, height / 2));
     } else if (this.state.equals("idle")) {
@@ -254,12 +286,7 @@ class Firefly {
       // Circling behavior around the user
       this.circleAroundUser();
 
-      // Transition to guiding after 3 rotations
-      if (this.cumulativeAngle >= 3 * TWO_PI) {
-        this.state = "guiding";
-        guidingStartTime = millis(); // Start guiding timer
-        userLastMovedTime = millis(); // Initialize last moved time
-      }
+
     } else if (this.state.equals("guiding")) {
       // If user is near the current destination, switch to circling_destination
         float fireflyDistanceToDestination = this.position.dist(currentDestination);
@@ -267,7 +294,7 @@ class Firefly {
         this.state = "circling_destination";
         this.angle = random(TWO_PI);
         this.cumulativeAngle = 0;
-        this.circleRadius = random(40, 60);
+        this.circleRadius = random(100, 150);
         this.angularSpeed = random(0.05f, 0.1f);
       } else {
         this.guideUser(currentDestination);
@@ -293,13 +320,6 @@ class Firefly {
       // Align in a straight line pointing toward the current destination
       this.alignTowardDestination(currentDestination);
 
-      // Return to guiding state if user starts moving
-      int currentTime = millis();
-      if (userLastMovedTime != null && currentTime - userLastMovedTime < 500) {
-        this.state = "guiding";
-        // Optionally reset glow intensity back to normal
-        this.resetGlow();
-      }
     }
 
     // Update velocity and position
@@ -360,14 +380,9 @@ class Firefly {
       // Reset variables for circling
       this.angle = random(TWO_PI);
       this.cumulativeAngle = 0;
-      this.circleRadius = random(40, 60);
+      this.circleRadius = random(120, 250);
       this.angularSpeed = random(0.05f, 0.1f);
       this.state = "circling";
-
-      // Set guidingStartTime if not already set
-      if (guidingStartTime == null) {
-        guidingStartTime = millis();
-      }
     }
   }
 
@@ -410,7 +425,7 @@ class Firefly {
 
     // Keep fireflies close to the user
     float distanceToUser = PVector.dist(this.position, this.userPos);
-    if (distanceToUser > 200) {
+    if (distanceToUser > maxDistanceFromUser ) {
       PVector pullBack = PVector.sub(this.userPos, this.position);
       pullBack.setMag(0.2f);
       this.velocity.add(pullBack);
@@ -424,7 +439,8 @@ class Firefly {
 
     // Since velocity is updated directly, set desiredVelocity to current velocity
     this.desiredVelocity = this.velocity.copy();
-  }
+  }    
+
 
   void circleAroundDestination(PVector currentDestination) {
     this.angle += this.angularSpeed;
@@ -464,15 +480,4 @@ void alignTowardDestination(PVector currentDestination) {
     this.desiredVelocity = toTarget;
   }
 
-  void intensifyGlow() {
-    // Increase glow intensity to maximum
-    this.glowIntensity = 255;
-    this.glowDirection = 0; // Stop pulsing
-  }
-
-  void resetGlow() {
-    // Reset glow intensity and pulsing
-    this.glowIntensity = random(100, 255);
-    this.glowDirection = random(0.5f, 1.5f);
-  }
 }

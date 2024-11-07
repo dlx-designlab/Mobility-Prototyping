@@ -25,3 +25,38 @@ The latest working version is usuing the LIDAR Sensor.
  * Check the AOI (red frame) corresponds to the physical screen edges
 
  
+ # FireFlies Navigational Aid
+
+All files are located in the `interactive-ripples` folder. The code for the Fireflies particle system is in fireflies_particles.pde
+The latest working version is usuing the LIDAR Sensor. a mouse can be used for testing. 
+
+Introduction
+The FireFlies Navigational Aid is an interactive installation designed to guide users through a physical space using visual cues inspired by the behavior of fireflies. This project utilizes sensors and visual effects to create an immersive experience where virtual fireflies lead users to predetermined destinations. 
+
+Features
+* Interactive Guidance: Fireflies respond to user movements, guiding them towards specific destinations.
+* Dynamic Visual Effects: The fireflies exhibit behaviors such as circling, approaching, natural flock movement and pulsing glows.
+* Sensor Integration: Utilizes LiDAR sensors to track user positions in real-time.
+* Customizable Destinations: Easily configure multiple destinations for the fireflies to guide users to.
+* Nudge Mechanism: Fireflies can prompt users who are idle or off-path to resume movement.
+* Configurable Parameters: Adjust settings like speed, glow intensity, and circling radius.
+
+Controls
+
+The Fireflies scenario can be accessed through the hot key 6 or from the GUI menu.
+
+Mode Toggle:
+* Press l to toggle live mode.
+* Press f to show/hide the AOI frame.
+* Press s to show/hide sensor data.
+* Press u to show/hide the user circle.
+* Press r to toggle between 60fps and 30fps.
+
+Fireflies Behavior
+States:
+
+* Idle: Fireflies circle around a central point when no user is detected.
+* Approach: Fireflies move towards the user when movement is detected.
+* Circling: Fireflies circle around the user.
+* Guiding: Fireflies lead the user towards the next destination.
+* Nudge: If the user stops moving, fireflies prompt them to continue by circling aroung him and aligning in a straight line facing the destination.
